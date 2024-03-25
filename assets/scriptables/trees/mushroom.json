@@ -1,0 +1,39 @@
+{
+	"type": "TreeData",
+	"has_light": true,
+	"light_data": [
+		[
+			1,
+			0,
+			0.8
+		],
+		7,
+		0.5
+	],
+	"grow_time": 1,
+	"unlock_level": 2,
+	"price": 280,
+	"attack_range": 12,
+	"attack_mode": "single",
+	"attack_cooldown": 3,
+	"proj": {
+		"speed": 12,
+		"size": [
+			0.8,
+			0.8
+		],
+		"tex_name": "gellyeffect",
+		"color": [
+			1,
+			0,
+			1,
+			0.5
+		],
+		"damage": 30
+	},
+	"effect": {
+		"name": "gelly",
+		"ticks": 4,
+		"speed_mul": 0.4
+	}
+}

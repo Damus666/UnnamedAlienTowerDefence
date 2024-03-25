@@ -1,0 +1,25 @@
+16 black and white skull
+32 simple fire animation (3/5 frames)
+64 tech like tree
+64 tree made of very dark purple tentacles
+32 single tentacle vertically
+64 carnivore plant similar to plants vs zombies one
+64 leaves from which a corn is rising
+64 banana tree
+32 banana projectile
+32 mais projectile
+64 single pepper with the stem goin in the ground
+32 pepper seed projectile
+64 vertically extending cactus (not ball)
+32 enemy bot base (black and white eye and details, color will be added to each one)
+128 player communication center (tech stucture with antennas, the thing you protect)
+32 alien bush with simple fruits
+16 the bush fruit projectile
+64/96 cloud effect after the mais explodes (so like a big pop corn)
+32 acid projectile from the carnivore plant
+32 spore of gelly projectile emitted from the mushroom
+32 tech friendly bot created by the tech tree
+
+ALL PROJECTILES MUST FACE UP (a spike should be /\ and so on)
+KINDA SIMPLE STYLE, SIMPLE SHADING
+ALL SQUARES, PIXEL NUMBERS CAN BE EXCEEDED WITH AN ERROR OF 3/4

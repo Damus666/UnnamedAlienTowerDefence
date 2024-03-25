@@ -1,0 +1,12 @@
+{
+    "type": "BuildingData",
+
+    "has_light": true,
+    "light_data": [[1, 0, 0], 7, 0.45],
+
+    "tex_name": "mineron",
+    "size": 2,
+    "price": 450,
+
+    "buy_xp": 0
+}

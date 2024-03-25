@@ -1,0 +1,32 @@
+{
+	"type": "TreeData",
+	"has_light": true,
+	"light_data": [
+		[
+			0,
+			0.4,
+			1
+		],
+		7,
+		0.5
+	],
+	"grow_time": 1,
+	"unlock_level": 1,
+	"price": 250,
+	"attack_range": 13,
+	"attack_mode": "burst",
+	"attack_cooldown": 2,
+	"burst": {
+		"cooldown": 0.1,
+		"amount": 5
+	},
+	"proj": {
+		"speed": 15,
+		"size": [
+			0.37,
+			0.37
+		],
+		"tex_name": "eyeflowerproj",
+		"damage": 8
+	}
+}

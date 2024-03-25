@@ -1,0 +1,25 @@
+{
+    "type": "TreeData",
+
+    "has_light": true,
+    "light_data": [[1, 0, 0.8], 7, 0.5],
+    
+    "tex_name": "",
+    "grow_time": 0,
+
+    "unlock_level": 1,
+    "price": 0,
+    "grow_xp": 0,
+    "plant_xp": 0,
+
+    "attack_range": 0,
+    "attack_mode": "single",
+    "attack_cooldown": 0,
+    "projj": "speed size tex_name dist color damage",
+    "burstt": "cooldown amount",
+    "splitt": "speed size tex_name dist color",
+    "areaa": "radius tex_name grow_time damage color",
+    "effectt": "name ticks damage/speed_mul",
+    "sequencee": "amount",
+    "beamm": "color tex_name size ticks damage"
+}

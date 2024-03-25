@@ -1,0 +1,12 @@
+{
+    "type": "BuildingData",
+
+    "has_light": false,
+    "light_data": [[1, 0, 0], 5, 0.5],
+
+    "tex_name": "energydist",
+    "size": 1,
+    "price": 250,
+
+    "buy_xp": 0
+}

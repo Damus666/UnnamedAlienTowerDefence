@@ -1,0 +1,35 @@
+{
+	"type": "TreeData",
+	"has_light": true,
+	"light_data": [
+		[
+			1,
+			0,
+			0
+		],
+		8,
+		0.4
+	],
+	"grow_time": 1,
+	"unlock_level": 10,
+	"price": 500,
+	"grow_xp": 0,
+	"plant_xp": 0,
+	"attack_range": 20,
+	"attack_mode": "single",
+	"attack_cooldown": 4,
+	"proj": {
+		"speed": 20,
+		"size": [
+			0.45,
+			0.45
+		],
+		"tex_name": "pepperproj",
+		"damage": 30
+	},
+	"effect": {
+		"name": "fire",
+		"ticks": 5,
+		"damage": 25
+	}
+}

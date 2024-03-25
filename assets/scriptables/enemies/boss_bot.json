@@ -1,0 +1,17 @@
+{
+	"type": "EnemyData",
+	"has_light": true,
+	"light_data": [
+		[
+			1,
+			0,
+			0
+		],
+		8,
+		1
+	],
+	"speed": 5,
+	"health": 1000,
+	"reward_mul": 2,
+	"size": 5
+}

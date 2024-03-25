@@ -1,0 +1,12 @@
+{
+    "type": "BuildingData",
+
+    "has_light": true,
+    "light_data": [[0.2, 0.6, 1], 10, 0.6],
+
+    "tex_name": "energysource",
+    "size": 2,
+    "price": 500,
+
+    "buy_xp": 0
+}

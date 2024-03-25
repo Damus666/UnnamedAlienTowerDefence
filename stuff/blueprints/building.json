@@ -1,0 +1,12 @@
+{
+    "type": "BuildingData",
+
+    "has_light": true,
+    "light_data": [[1, 0, 0], 5, 0.5],
+
+    "tex_name": "",
+    "size": 2,
+    "price": 0,
+
+    "buy_xp": 0
+}

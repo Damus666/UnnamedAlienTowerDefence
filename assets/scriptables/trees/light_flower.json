@@ -1,0 +1,30 @@
+{
+	"type": "TreeData",
+	"has_light": true,
+	"light_data": [
+		[
+			1,
+			0.8,
+			0
+		],
+		8,
+		0.5
+	],
+	"grow_time": 1,
+	"unlock_level": 7,
+	"price": 400,
+	"attack_range": 16,
+	"attack_mode": "beam",
+	"attack_cooldown": 3.8,
+	"beam": {
+		"color": [
+			1,
+			1,
+			0,
+			1
+		],
+		"damage": 20.0,
+		"size": 0.12,
+		"ticks": 6
+	}
+}

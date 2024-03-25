@@ -1,0 +1,18 @@
+{
+	"type": "EnemyData",
+	"has_light": true,
+	"light_data": [
+		[
+			0.7,
+			0,
+			1
+		],
+		6,
+		0.6
+	],
+	"tex_name": "red_bot",
+	"speed": 7,
+	"health": 200,
+	"reward_mul": 1.5,
+	"buff": "only_effect"
+}

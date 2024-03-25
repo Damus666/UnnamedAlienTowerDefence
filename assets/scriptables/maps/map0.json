@@ -1,0 +1,28 @@
+{
+    "type": "MapData",
+
+    "index": 0,
+    "health": 10000,
+    "waves": [
+        [
+            {
+                "wait_time": 0,
+                "enemy_name": "cian_bot",
+                "enemy_amount": 4,
+                "spawn_cooldown": 1
+            },
+            {
+                "wait_time": 3,
+                "enemy_name": "green_bot",
+                "enemy_amount": 5,
+                "spawn_cooldown": 0.7
+            },
+            {
+                "wait_time": 4,
+                "enemy_name": "boss_bot",
+                "enemy_amount": 1,
+                "spawn_cooldown": 0
+            }
+        ]
+    ]
+}

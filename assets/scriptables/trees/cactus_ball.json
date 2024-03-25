@@ -1,0 +1,42 @@
+{
+	"type": "TreeData",
+	"has_light": true,
+	"light_data": [
+		[
+			1,
+			1,
+			1
+		],
+		6,
+		0.5
+	],
+	"grow_time": 1,
+	"unlock_level": 3,
+	"price": 350,
+	"grow_xp": 0,
+	"plant_xp": 0,
+	"attack_range": 15,
+	"attack_mode": "split",
+	"attack_cooldown": 3,
+	"proj": {
+		"speed": 15,
+		"size": [
+			0.8,
+			0.8
+		],
+		"inflate": 0,
+		"tex_name": "cactusproj",
+		"damage": 50
+	},
+	"split": {
+		"speed": 20.0,
+		"size": [
+			0.4,
+			0.4
+		],
+		"inflate": 0,
+		"tex_name": "cactusspike",
+		"dist": 7.0,
+		"damage": 40.0
+	}
+}

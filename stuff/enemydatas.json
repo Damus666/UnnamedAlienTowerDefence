@@ -1,0 +1,79 @@
+[
+  {
+    "color": "cian",
+    "health": 50,
+    "speed": 3,
+    "buff": "",
+    "reward mul": 1
+  },
+  {
+    "color": "pink",
+    "health": 80,
+    "speed": 4,
+    "buff": "",
+    "reward mul": 1.1
+  },
+  {
+    "color": "green",
+    "health": 100,
+    "speed": 4,
+    "buff": "cure",
+    "reward mul": 1.2
+  },
+  {
+    "color": "orange",
+    "health": 150,
+    "speed": 5,
+    "buff": "",
+    "reward mul": 1.1
+  },
+  {
+    "color": "yellow",
+    "health": 150,
+    "speed": 4,
+    "buff": "speed",
+    "reward mul": 1.2
+  },
+  {
+    "color": "red",
+    "health": 180,
+    "speed": 5,
+    "buff": "rage",
+    "reward mul": 1.2
+  },
+  {
+    "color": "blue",
+    "health": 120,
+    "speed": 4,
+    "buff": "armor",
+    "reward mul": 1.4
+  },
+  {
+    "color": "purple",
+    "health": 200,
+    "speed": 8,
+    "buff": "",
+    "reward mul": 1.2
+  },
+  {
+    "color": "white",
+    "health": 200,
+    "speed": 7,
+    "buff": "no_effect",
+    "reward mul": 1.5
+  },
+  {
+    "color": "black",
+    "health": 200,
+    "speed": 7,
+    "buff": "only_effect",
+    "reward mul": 1.5
+  },
+  {
+    "color": "boss",
+    "health": 1500,
+    "speed": 5,
+    "buff": "",
+    "reward mul": 2
+  }
+]
