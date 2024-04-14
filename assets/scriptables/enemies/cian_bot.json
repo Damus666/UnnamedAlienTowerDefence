@@ -12,5 +12,6 @@
 	],
 	"speed": 3,
 	"health": 50,
-	"reward_mul": 1
+	"reward_mul": 1,
+	"xp": 10
 }

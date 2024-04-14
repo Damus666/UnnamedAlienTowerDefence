@@ -1,18 +1,45 @@
+
 from src.engine.prelude import *
-import string
 
 from src.world import World
 from src.assets import Assets
+from src.settings import Settings, LanguageManager
 from src.consts import *
+from src import god
 
 class App(SceneManager):
     def __init__(self):
-        camera.init_window(WIDTH, HEIGHT, TITLE, FPS, PROJ_SIZE, 0)
+        god.app = self
+        Settings.get_user_path()
+        camera.init_window(WIDTH, HEIGHT, TITLE, PROJ_SIZE, 0)
         ctx.load_shaders("assets/shaders", LIT_SHADER, UNLIT_SHADER, UI_SHADER, REPLACE_SHADER)
-        #font.add_font("main", pygame.Font("assets/pixelated.tff", 50), string.ascii_letters+string.digits+string.punctuation+" ", False)
         scriptable.load("assets/scriptables")
-        self.assets = Assets()
+        
+        god.assets = Assets()
+        god.lang = LanguageManager()
+        god.settings = Settings()   
+        self.screen_buffer = Screenbuffer()
+        
+        self.screen_buffer.refresh_buffer(WIDTH, HEIGHT, god.settings.scaled_mul)
         self.load_scene(World.name, MapData.get("map0"))
+        #import ez_profile
+
+    def pre_render(self):
+        camera.upload_uniforms(LIT_SHADER, UNLIT_SHADER, REPLACE_SHADER)
+        camera.upload_ui_uniforms(UI_SHADER)
+        texture.upload_samplers(MAX_SAMPLERS, TEXTURES_UNIFORM, LIT_SHADER, UNLIT_SHADER, REPLACE_SHADER, UI_SHADER)
+        god.assets.use()
+        if god.settings.scaled_mul != 1:
+            self.screen_buffer.pre_render()
+
+    def post_render(self):
+        if not god.settings.ui_high_res and god.settings.scaled_mul != 1:
+            god.app.screen_buffer.post_render()
+        camera.tick_window(god.settings.fps)
+        
+    def on_quit(self):
+        god.settings.save()
+        self.screen_buffer.free()
 
 if __name__ == "__main__":
     App().run()

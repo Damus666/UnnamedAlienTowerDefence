@@ -103,7 +103,7 @@ colors = {
     4: "orange",
     5: "dark blue",
     6: "green",
-    10: "magenta"
+    10: "magenta",
 }
 names = {
     0: "Erase",
@@ -115,8 +115,7 @@ names = {
     4: "Copper",
     5: "Titanium",
     6: "Tioplasm",
-    10: "Oxygen"
-    
+    10: "Oxygen",    
 }
 
 def resize():

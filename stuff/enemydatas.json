@@ -3,6 +3,7 @@
     "color": "cian",
     "health": 50,
     "speed": 3,
+    "xp": 10,
     "buff": "",
     "reward mul": 1
   },
@@ -10,6 +11,7 @@
     "color": "pink",
     "health": 80,
     "speed": 4,
+    "xp": 20,
     "buff": "",
     "reward mul": 1.1
   },
@@ -17,6 +19,7 @@
     "color": "green",
     "health": 100,
     "speed": 4,
+    "xp": 25,
     "buff": "cure",
     "reward mul": 1.2
   },
@@ -24,6 +27,7 @@
     "color": "orange",
     "health": 150,
     "speed": 5,
+    "xp": 40,
     "buff": "",
     "reward mul": 1.1
   },
@@ -31,6 +35,7 @@
     "color": "yellow",
     "health": 150,
     "speed": 4,
+    "xp": 50,
     "buff": "speed",
     "reward mul": 1.2
   },
@@ -38,6 +43,7 @@
     "color": "red",
     "health": 180,
     "speed": 5,
+    "xp": 70,
     "buff": "rage",
     "reward mul": 1.2
   },
@@ -45,6 +51,7 @@
     "color": "blue",
     "health": 120,
     "speed": 4,
+    "xp": 100,
     "buff": "armor",
     "reward mul": 1.4
   },
@@ -52,6 +59,7 @@
     "color": "purple",
     "health": 200,
     "speed": 8,
+    "xp": 130,
     "buff": "",
     "reward mul": 1.2
   },
@@ -59,6 +67,7 @@
     "color": "white",
     "health": 200,
     "speed": 7,
+    "xp": 180,
     "buff": "no_effect",
     "reward mul": 1.5
   },
@@ -66,6 +75,7 @@
     "color": "black",
     "health": 200,
     "speed": 7,
+    "xp": 200,
     "buff": "only_effect",
     "reward mul": 1.5
   },
@@ -73,6 +83,7 @@
     "color": "boss",
     "health": 1500,
     "speed": 5,
+    "xp": 1000,
     "buff": "",
     "reward mul": 2
   }

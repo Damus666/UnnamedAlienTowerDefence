@@ -3,6 +3,7 @@ import random
 
 from .consts import *
 from .particle import MovingParticle, GrowingParticle, Particle
+from . import god
 
 class AttackEffect:
     def __init__(self, enemy, name, ticks):
@@ -47,7 +48,7 @@ class PoisonEffect(AttackEffect):
         
     def tick(self):
         size = EFFECT_PARTICLE_SIZE + random.uniform(-0.11, 0.11)
-        self.enemy.world.add_uparticle(MovingParticle(self.enemy.world, self.enemy.rect.center, (size, size), (0, -1), EFFECT_PARTICLE_DIST, EFFECT_PARTICLE_SPEED,
+        god.world.add_uparticle(MovingParticle(self.enemy.rect.center, (size, size), (0, -1), EFFECT_PARTICLE_DIST, EFFECT_PARTICLE_SPEED,
                                                             "skull", 0, (0, 0.7, 0, 1)))
         self.enemy.damage(self.damage, True)
                 
@@ -55,8 +56,8 @@ class GellyEffect(AttackEffect):
     def __init__(self, enemy, name, ticks, speed_mul):
         super().__init__(enemy, name, ticks)
         self.enemy.speed_mul = speed_mul
-        self.particle = Particle(self.enemy.world, self.enemy.rect.center, (1.2, 1.2), "gellyeffect", 0, (1, 0, 1, 0.5))
-        self.enemy.world.add_uparticle(self.particle)
+        self.particle = Particle(self.enemy.rect.center, (1.2, 1.2), "gellyeffect", 0, (1, 0, 1, 0.5))
+        god.world.add_uparticle(self.particle)
         
     def extra_update(self):
         self.particle.rect.center = self.enemy.rect.center
@@ -82,7 +83,7 @@ class EnemyBuff:
         
     def spawn_effect(self, name, col):
         size = EFFECT_PARTICLE_SIZE + random.uniform(-0.11, 0.11)
-        self.enemy.world.add_uparticle(MovingParticle(self.enemy.world, self.enemy.rect.center, (size, size), (0, -1), EFFECT_PARTICLE_DIST, EFFECT_PARTICLE_SPEED,
+        god.world.add_uparticle(MovingParticle(self.enemy.rect.center, (size, size), (0, -1), EFFECT_PARTICLE_DIST, EFFECT_PARTICLE_SPEED,
                                                             name, 0, col))
                 
 class CureBuff(EnemyBuff):
@@ -154,13 +155,13 @@ class NoEffectBuff(EnemyBuff):
 class TeleportBuff(EnemyBuff):
     def __init__(self, enemy):
         super().__init__(enemy)
-        half_idx = len(self.enemy.world.follow_pos)//2
-        self.enemy.rect.center = self.enemy.world.follow_pos[half_idx]
+        half_idx = len(god.world.follow_pos)//2
+        self.enemy.rect.center = god.world.follow_pos[half_idx]
         self.enemy.follow_pos_idx = half_idx+1
-        self.enemy.next_follow_pos = self.enemy.world.follow_pos[half_idx+1]
-        self.enemy.next_rect = self.enemy.world.follow_rects[half_idx+1]
+        self.enemy.next_follow_pos = god.world.follow_pos[half_idx+1]
+        self.enemy.next_rect = god.world.follow_rects[half_idx+1]
         self.enemy.update_pos()
-        self.enemy.world.add_uparticle(GrowingParticle(self.enemy.world, self.enemy.rect.center, (1.5, 1.5), 2.5, 0.05, 0.5, "enemyportal"))
+        self.enemy.world.add_uparticle(GrowingParticle(self.enemy.rect.center, (1.5, 1.5), 2.5, 0.05, 0.5, "enemyportal"))
         
 ATTACK_EFFECTS = {
     "fire": FireEffect,

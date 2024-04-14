@@ -1,34 +1,43 @@
 from .engine.prelude import *
 
 from .consts import *
+from . import god
 
 class Particle:
-    def __init__(self, world, pos, size, tex_name, frames=0, col=None, frame_speed=0):
-        self.world = world
+    def __init__(self, pos, size, tex_name, frames=0, col=None, frame_speed=0, duration=0):
         self.rect = pygame.FRect((0, 0), (size[0], size[1]))
         self.rect.center = pos
         self.rect_obj = RectObj(pos, None, size, col, WORLD_ATLAS,
-                                self.world.assets.get_uvs(tex_name if frames <= 0 else f"{tex_name}0"))
+                                god.assets.get_uvs(tex_name if frames <= 0 else f"{tex_name}0"))
         self.angle = 0
-        self.uvs = [self.world.assets.get_uvs(tex_name+str(i)) for i in range(frames)] if frames > 0 else None
+        self.uvs = [god.assets.get_uvs(tex_name+str(i)) for i in range(frames)] if frames > 0 else None
         self.anim = Anim(frames, frame_speed)
+        self.duration = duration
+        self.born_time = pygame.time.get_ticks()
+        
+    def instantiate(self):
+        god.world.add_uparticle(self)
+        return self
         
     def update_rect_obj(self):
-        self.rect_obj.update_positions(self.rect.center, None, self.rect.size, self.angle)
+        if self.rect.colliderect(camera.world_rect):
+            self.rect_obj.update_positions(self.rect.center, None, self.rect.size, self.angle)
         
     def animate(self):
         self.anim.update()
         self.rect_obj.uv = self.uvs[self.anim.get_idx()]
         
     def update(self):
-        ...
+        if self.duration != 0:
+            if pygame.time.get_ticks() - self.born_time >= self.duration*1000:
+                self.destroy()
         
     def destroy(self):
-        self.world.remove_uparticle(self)
+        god.world.remove_uparticle(self)
         
 class MovingParticle(Particle):
-    def __init__(self, world, pos, size, dir, dist, speed, tex_name, frames = 0, col=None, frame_speed=0):
-        super().__init__(world, pos, size, tex_name, frames, col, frame_speed)
+    def __init__(self, pos, size, dir, dist, speed, tex_name, frames = 0, col=None, frame_speed=0):
+        super().__init__(pos, size, tex_name, frames, col, frame_speed)
         self.tex_name = tex_name
         self.dir, self.dist, self.speed = pygame.Vector2(dir), dist, speed
         self.start_pos = pygame.Vector2(pos)
@@ -50,8 +59,8 @@ class MovingParticle(Particle):
         self.move()
         
 class GrowingParticle(Particle):
-    def __init__(self, world, pos, size, increase, grow_time, disappear_time, tex_name, frames=0, col=None, frame_speed=0):
-        super().__init__(world, pos, size, tex_name, frames, col, frame_speed)
+    def __init__(self,pos, size, increase, grow_time, disappear_time, tex_name, frames=0, col=None, frame_speed=0):
+        super().__init__(pos, size, tex_name, frames, col, frame_speed)
         self.increase, self.grow_time, self.disappear_time = increase, grow_time, disappear_time
         self.start_w, self.start_h = self.rect.w, self.rect.h
         self.start_time = pygame.time.get_ticks()
@@ -76,8 +85,8 @@ class GrowingParticle(Particle):
         self.grow()
         
 class GrowingParticleY(Particle):
-    def __init__(self, world, pos, size, increase, grow_time, disappear_time, tex_name, frames=0, col=None, frame_speed=0):
-        super().__init__(world, pos, size, tex_name, frames, col, frame_speed)
+    def __init__(self, pos, size, increase, grow_time, disappear_time, tex_name, frames=0, col=None, frame_speed=0):
+        super().__init__(pos, size, tex_name, frames, col, frame_speed)
         self.increase, self.grow_time, self.disappear_time = increase, grow_time, disappear_time
         self.start_h = self.rect.h
         self.start_time = pygame.time.get_ticks()
@@ -102,15 +111,15 @@ class GrowingParticleY(Particle):
         self.grow()
         
 class Proj(MovingParticle):
-    def __init__(self, world, pos, size, dir, tree, proj, attrs=None, invis_enemies=None):
-        super().__init__(world, pos, size, dir, proj["dist"], proj["speed"], proj["tex_name"], proj.get("frames", 0), proj.get("color", WHITE), proj.get("frame_speed", 0))
+    def __init__(self, pos, size, dir, tree, proj, attrs=None, invis_enemies=None):
+        super().__init__(pos, size, dir, proj["dist"], proj["speed"], proj["tex_name"], proj.get("frames", 0), proj.get("color", WHITE), proj.get("frame_speed", 0))
         self.tree, self.attrs, self.invis_enemies = tree, (attrs if attrs else {}), (invis_enemies if invis_enemies else [])
         self.proj = proj
         self.face_dir()
         
     def update(self):
         self.move()
-        for enemy in self.world.enemies:
+        for enemy in god.world.enemies:
             if enemy not in self.invis_enemies:
                 if self.rect.colliderect(enemy.rect):
                     self.destroy()

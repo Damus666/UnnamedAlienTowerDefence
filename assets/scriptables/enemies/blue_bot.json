@@ -13,5 +13,6 @@
 	"speed": 4,
 	"health": 120,
 	"reward_mul": 1.4,
-	"buff": "armor"
+	"buff": "armor",
+	"xp": 100
 }

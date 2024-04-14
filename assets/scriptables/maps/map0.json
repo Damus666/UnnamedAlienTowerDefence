@@ -9,19 +9,22 @@
                 "wait_time": 0,
                 "enemy_name": "cian_bot",
                 "enemy_amount": 4,
-                "spawn_cooldown": 1
+                "spawn_cooldown": 1,
+                "xp": 10
             },
             {
                 "wait_time": 3,
                 "enemy_name": "green_bot",
                 "enemy_amount": 5,
-                "spawn_cooldown": 0.7
+                "spawn_cooldown": 0.7,
+                "xp": 20
             },
             {
                 "wait_time": 4,
                 "enemy_name": "boss_bot",
                 "enemy_amount": 1,
-                "spawn_cooldown": 0
+                "spawn_cooldown": 0,
+                "xp": 30
             }
         ]
     ]

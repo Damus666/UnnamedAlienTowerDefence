@@ -7,13 +7,13 @@ if typing.TYPE_CHECKING:
     
 from .enemy import Enemy
 from .particle import Proj, GrowingParticle, GrowingParticleY, Particle
+from . import god
 
 from .consts import *
 
 class TreeAttack:
     def __init__(self, tree: "Tree"):
         self.tree: "Tree" = tree
-        self.world: "World" = self.tree.world
         self.tree_data = tree.tree
         self.last_attack = -10000
         self.enemy: Enemy = None
@@ -22,6 +22,8 @@ class TreeAttack:
     def base_update(self):
         if not self.can_attack:
             return False
+        if self.tree.energy < self.tree.tree.energy_price:
+            return False
         if pygame.time.get_ticks() - self.last_attack > self.tree_data.attack_cooldown*1000:
             enemy = self.choose_enemy(self.available_enemies())
             if enemy:
@@ -29,11 +31,14 @@ class TreeAttack:
                 self.last_attack = pygame.time.get_ticks()
                 self.start_attack()
                 
+    def update(self):
+        self.base_update()
+                
     def available_enemies(self, invis_enemies=[], start=None):
         if start is None:
             start = self.tree.pos
         enemies = []
-        for enemy in (self.world.enemies):
+        for enemy in (god.world.enemies):
             if enemy not in invis_enemies and pygame.Vector2(start).distance_to(enemy.rect.center) <= self.tree_data.attack_range:
                 enemies.append(enemy)
         return enemies
@@ -65,16 +70,16 @@ class TreeAttack:
         ...
         
     def shoot(self, pos, size, dir, proj, attrs=None, invis_enemies=None, target=None):
-        self.world.add_uparticle(Proj(self.world, pos, size, dir, self.tree, proj, attrs, invis_enemies))
-        if target and target not in self.world.enemies_shot:
-            self.world.enemies_shot.append(target)
+        god.world.add_uparticle(Proj(pos, size, dir, self.tree, proj, attrs, invis_enemies))
+        if target and target not in god.world.enemies_shot:
+            god.world.enemies_shot.append(target)
         
     def hit_effect(self, enemy: Enemy):
         if self.tree_data.has_effect:
             extra = list(filter((lambda x: x[0] not in ["name", "ticks"]), list(self.tree_data.effect.items())))[0][1]
             enemy.add_effect(self.tree_data.effect["name"], self.tree_data.effect["ticks"], extra)
-        if enemy in self.world.enemies_shot:
-            self.world.enemies_shot.remove(enemy)
+        if enemy in god.world.enemies_shot:
+            god.world.enemies_shot.remove(enemy)
         
     def hit(self, enemy: Enemy, proj):
         self.hit_effect(enemy)
@@ -83,9 +88,6 @@ class TreeAttack:
         if start is None:
             start = self.tree.pos
         return -(pygame.Vector2(start)-predicted).normalize()
-    
-    def update(self):
-        self.base_update()
         
 class AttackSingle(TreeAttack):
     def __init__(self, tree):
@@ -94,6 +96,7 @@ class AttackSingle(TreeAttack):
         
     def start_attack(self):
         esize, eoffset = self.get_size_offset()
+        self.tree.consume_energy()
         self.shoot(self.tree.pos+eoffset, (self.proj["size"][0]+esize, self.proj["size"][1]+esize), self.get_dir(self.predict_enemy_pos()), self.proj, target=self.enemy)
         
 class AttackHitSplit(AttackSingle):
@@ -117,9 +120,9 @@ class AttackHitArea(AttackSingle):
     def hit(self, enemy: Enemy, proj: Proj):
         self.hit_effect(enemy)
         class_name = GrowingParticleY if self.area.get("y", False) else GrowingParticle
-        self.world.add_uparticle(class_name(self.world, proj.rect.center, [0, 0], self.area["radius"]*2, self.area["grow_time"], 
+        god.world.add_uparticle(class_name(proj.rect.center, [0, 0], self.area["radius"]*2, self.area["grow_time"], 
                                                  self.area.get("disappear_time", 0.2), self.area["tex_name"], self.area.get("frames", 0), self.area.get("color", WHITE), self.area.get("frame_speed", 0)))
-        for enemy in self.world.enemies:
+        for enemy in god.world.enemies:
             if pygame.Vector2(enemy.rect.center).distance_to(proj.rect.center) <= self.area["radius"]:
                 enemy.damage(self.area["damage"])
                 
@@ -156,6 +159,7 @@ class AttackBurst(TreeAttack):
             self.attacking = False
         self.last_spawn = pygame.time.get_ticks()
         esize, eoffset = self.get_size_offset()
+        self.tree.consume_energy()
         self.shoot(self.tree.pos+eoffset, (self.proj["size"][0]+esize, self.proj["size"][1]+esize), self.get_dir(self.predict_enemy_pos()), self.proj, target=self.enemy)
         
     def update(self):
@@ -169,10 +173,11 @@ class AttackSpawn(TreeAttack):
         super().__init__(tree)
         
     def start_attack(self):
-        self.world.add_uparticle(GrowingParticleY(self.world, self.enemy.rect.center, (self.tree_data.area["x"], 0), self.tree_data.area["radius"], 
+        self.tree.consume_energy()
+        god.world.add_uparticle(GrowingParticleY(self.enemy.rect.center, (self.tree_data.area["radius"], 0), self.tree_data.area["radius"], 
                                                   self.tree_data.area["grow_time"], self.tree_data.area.get("disappear_time", 0.2), self.tree_data.area["tex_name"],
                                                   self.tree_data.area.get("frames", 0), self.tree_data.area.get("color", WHITE), self.tree_data.area.get("frame_speed", 0)))
-        for enemy in self.world.enemies:
+        for enemy in god.world.enemies:
             if pygame.Vector2(enemy.rect.center).distance_to(self.enemy.rect.center) <= self.tree_data.area["radius"]:
                 enemy.damage(self.tree_data.area["damage"])
 
@@ -187,12 +192,14 @@ class AttackBeam(TreeAttack):
         self.can_attack = False
         self.last_tick = pygame.time.get_ticks()
         self.ticks = 0
-        self.particle = Particle(self.world, (0, 0), (self.beam["size"], 1), self.beam.get("tex_name", "square"), 0, self.beam.get("color", WHITE), 0)
-        self.world.add_uparticle(self.particle)
+        self.particle = Particle((0, 0), (self.beam["size"], 1), self.beam.get("tex_name", "square"), 0, self.beam.get("color", WHITE), 0)
+        god.world.add_uparticle(self.particle)
         self.update_particle()
     
     def update(self):
         self.base_update()
+        if self.tree.energy < self.tree.tree.energy_price:
+            return
         if not self.can_attack:
             self.update_particle()
             
@@ -210,6 +217,7 @@ class AttackBeam(TreeAttack):
                     
                 if self.enemy.health > 0:
                     self.enemy.damage(self.beam["damage"])
+                    self.tree.consume_energy()
                     
     def update_particle(self):
         direction = self.enemy.rect.center-self.tree.pos

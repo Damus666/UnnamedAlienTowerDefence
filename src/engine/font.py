@@ -1,123 +1,141 @@
 import moderngl
 import pygame
+import string
 
-from .texture import Texture, TextureBatch
-from . import buffer
+from .buffer import RectObj
+from .texture import SpriteAtlas
 
-font_textures: list[Texture] = []
+def add_font(name, pg_font: pygame.Font, atlas: SpriteAtlas, tex_id, antialiasing=True, base_scale=1, extra_chars=""):
+    chars = string.ascii_letters+string.digits+string.punctuation+" "+extra_chars
+    bitmaps[name] = FontBitmap(pg_font, chars, tex_id, atlas, base_scale)
+    for char in chars:
+        atlas.add(pg_font.render(char, antialiasing, "white"), f"{name}_{char}")
 
 class FontBitmap:
-    def __init__(self, name, pg_font: pygame.Font, chars, antialiasing):
-        self.name = name
-        self.pg_font = pg_font
-        self.chars = chars
-        self.antialiasing = antialiasing
-        self.pg_surf = self.pg_font.render(self.chars, self.antialiasing, "white")
-        self.height = self.pg_font.get_height()
-        self.chars_size = self.pg_surf.get_width()
-        self.chars_idx = {c:i for i, c in enumerate(self.chars)}
-        self.chars_uvs = {}
+    def __init__(self, pg_font: pygame.Font, chars, tex_id, atlas:SpriteAtlas, base_scale):
+        self.height = pg_font.get_height()*base_scale
+        self.tex_id = tex_id
+        self.atlas = atlas
         self.chars_w = {}
-        for c in self.chars:
-            i = self.chars_idx[c]
-            firstpart = self.chars[0:i]
-            startlen = self.pg_font.size(firstpart)[0]
-            charlen = self.pg_font.size(c)[0]
-            self.chars_uvs[c] = [
-                ((startlen)/self.chars_size, 0),
-                ((startlen+charlen)/self.chars_size, 0),
-                ((startlen)/self.chars_size, 1),
-                ((startlen+charlen)/self.chars_size, 1)
-            ]
-            self.chars_w[c] = charlen
-        self.texture = Texture.from_surface(self.pg_surf, self.name)
-        self.batch_location = len(font_textures)
-        font_textures.append(self.texture)
-        
-    def scaled_size(self, text, scale_mul):
-        size = self.pg_font.size(text)
-        return (size[0]*scale_mul, size[1]*scale_mul)
-        
-font_bitmaps: dict = {}
+        for char in chars:
+            self.chars_w[char] = pg_font.size(char)[0]*base_scale
+    
+    def char_w(self, char, scale):
+        return self.chars_w.get(char, 0)*scale
 
-def add_font(name, pg_font, chars, antialiasing=True):
-    global font_bitmaps
-    font_bitmaps[name] = FontBitmap(name, pg_font, chars, antialiasing)
-    
-class TopleftPosBuilder:
-    def __init__(self, pos):
-        self.pos = pos
-    
-    def get(self, bitmap: FontBitmap, text: str, size_mul: float):
-        ...
-        
-class FromCenter(TopleftPosBuilder):
-    def get(self, bitmap: FontBitmap, text: str, size_mul: float):
-        size = bitmap.scaled_size(text, size_mul)
-        return (self.pos[0]-size[0]/2, self.pos[1]-size[1]/2)
-    
-class FromBottomRight(TopleftPosBuilder):
-    def get(self, bitmap: FontBitmap, text: str, size_mul: float):
-        size = bitmap.scaled_size(text, size_mul)
-        return (self.pos[0]-size[0], self.pos[1]-size[1])
-    
-class FromBottomLeft(TopleftPosBuilder):
-    def get(self, bitmap: FontBitmap, text: str, size_mul: float):
-        size = bitmap.scaled_size(text, size_mul)
-        return (self.pos[0], self.pos[1]-size[1])
-    
-class FromTopRight(TopleftPosBuilder):
-    def get(self, bitmap: FontBitmap, text: str, size_mul: float):
-        size = bitmap.scaled_size(text, size_mul)
-        return (self.pos[0]-size[0], self.pos[1])
-    
-class FontBatch:
-    def __init__(self, dynamic:bool = False):
-        self.text_buffer_data = []
-        self.separated_buffer_data = {}
-        self.dynamic = dynamic
-        self.reserved_size = {}
-        
-    def set_text(self, index, text: str, color, font_name, size_mul, pos_topleft, other_pos:TopleftPosBuilder=None, reserve=None):
-        bitmap: FontBitmap = font_bitmaps[font_name]
-        if pos_topleft is None:
-            pos_topleft = other_pos.get(bitmap, text, size_mul)
-        if index in self.reserved_size:
-            text = text.center(self.reserved_size[index], "\t")
-        else:
-            reserve_size = reserve if reserve else len(text)
-            self.reserved_size[index] = reserve_size
-            text = text.center(reserve_size, "\t")
-        buffer_data = []
-        x = pos_topleft[0]
-        charh = bitmap.height*size_mul
-        for char in text:
-            if char == "\t":
-                charw = 0
-                char_uvs = [(1,1), (1,1), (1,1), (1,1)]
-            else:
-                charw = bitmap.chars_w[char]*size_mul
-                char_uvs = bitmap.chars_uvs[char].copy()
-            buffer_data.append([
-                buffer.rect_vertices_topleft((x, pos_topleft[1]), (charw, charh)),
-                color, bitmap.batch_location, char_uvs
-            ])
-            x += charw
-        self.separated_buffer_data[index] = buffer_data
-        
-    def clear(self):
-        self.text_buffer_data.clear()
-        self.separated_buffer_data.clear()
-        
-    def get_buffer_data(self):
-        buffer_data = []
-        for bd in self.separated_buffer_data.values():
-            buffer_data += bd
-        return buffer_data
-        
-    def make_buffers(self):
-        self.vbo, self.ibo = buffer.rects_uvs_vbo_ibo(self.get_buffer_data(), self.dynamic, False)
-        
-    def update_buffers(self):
-        buffer.update_rects_uvs_vbo(self.vbo, self.get_buffer_data())
-    
+bitmaps: dict[str, FontBitmap] = {}
+
+def render_single(font_name: str, text: str, position, scale=1, pos_name="center", color=(1,1,1,1)):
+    bitmap = bitmaps[font_name]
+    x = y = h = 0
+    all_chars = []
+    for char in text:
+        cw = bitmap.char_w(char, scale)
+        all_chars.append([char, x, y, cw])
+        x += cw
+    h = y + bitmap.height*scale
+    rect_objs = []
+    for char in all_chars:
+        if pos_name == "tl":
+            char[1] += position[0]
+            char[2] += position[1]
+        elif pos_name == "center":
+            char[1] += position[0]-x/2
+            char[2] += position[1]-h/2
+        elif pos_name == "tr":
+            char[1] += position[0]-x
+            char[2] += position[1]
+        elif pos_name == "bl":
+            char[1] += position[0]
+            char[2] += position[1]-h
+        elif pos_name == "br":
+            char[1] += position[0]-x
+            char[2] += position[1]-h
+        elif pos_name == "ml":
+            char[1] += position[0]
+            char[2] += position[1]-h/2
+
+        robj = RectObj(None, (char[1], char[2]), (char[3], bitmap.height*scale), color, bitmap.tex_id,
+                       bitmap.atlas.get_uvs(f"{font_name}_{char[0]}"))
+        rect_objs.append(robj)
+    return rect_objs
+
+def render_single_center(font_name: str, text: str, center, scale=1, color=(1,1,1,1)):
+    bitmap = bitmaps[font_name]
+    x = y = h = 0
+    all_chars = []
+    for char in text:
+        cw = bitmap.char_w(char, scale)
+        all_chars.append([char, x, y, cw])
+        x += cw
+    h = y + bitmap.height*scale
+    rect_objs = []
+    for char in all_chars:
+        robj = RectObj(None, (char[1]+center[0]-x/2, char[2]+center[1]-h/2), (char[3], bitmap.height*scale), color, bitmap.tex_id,
+                       bitmap.atlas.get_uvs(f"{font_name}_{char[0]}"))
+        rect_objs.append(robj)
+    return rect_objs
+
+def render_full(font_name: str, text: str, position, scale, pos_name="center", max_w=-1, align="center", color=(1, 1, 1, 1)):
+    bitmap = bitmaps[font_name]
+    x = y = w = h = 0
+    chars = []
+    lines = []
+    all_chars = []
+    for char in text:
+        cw = bitmap.char_w(char, scale)
+        if char == "\n" or (x + cw > max_w and max_w > 0):
+            if x > w:
+                w = x
+            x = 0
+            y += bitmap.height*scale
+            lines.append(chars)
+            all_chars += chars
+            chars = []
+        if char == "\n":
+            continue
+        chars.append([char, x, y, cw])
+        x += cw
+    if x > w:
+        w = x
+    if len(chars) > 0:
+        all_chars += chars
+        lines.append(chars)
+    h = y + bitmap.height*scale
+    if align == "center":
+        for line in lines:
+            lw = sum([c[3] for c in line])
+            offset = w/2-lw/2
+            for c in line:
+                c[1] += offset
+    elif align == "right":
+        for line in lines:
+            lw = sum([c[3] for c in line])
+            offset = w-lw
+            for c in line:
+                c[1] += offset
+    rect_objs = []
+    for char in all_chars:
+        if pos_name == "tl":
+            char[1] += position[0]
+            char[2] += position[1]
+        elif pos_name == "center":
+            char[1] += position[0]-w/2
+            char[2] += position[1]-h/2
+        elif pos_name == "tr":
+            char[1] += position[0]-w
+            char[2] += position[1]
+        elif pos_name == "bl":
+            char[1] += position[0]
+            char[2] += position[1]-h
+        elif pos_name == "br":
+            char[1] += position[0]-w
+            char[2] += position[1]-h
+        elif pos_name == "ml":
+            char[1] += position[0]
+            char[2] += position[1]-h/2
+
+        robj = RectObj(None, (char[1], char[2]), (char[3], bitmap.height*scale), color, bitmap.tex_id,
+                       bitmap.atlas.get_uvs(f"{font_name}_{char[0]}"))
+        rect_objs.append(robj)
+    return rect_objs

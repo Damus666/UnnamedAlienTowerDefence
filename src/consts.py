@@ -1,9 +1,12 @@
 import pygame
 
 # window
-WIDTH, HEIGHT = 1920, 1080#1200, 800
-TITLE = "OpenGL - Prototype"
+WIDTH, HEIGHT = 1920, 1080
+#WIDTH, HEIGHT = 1200, 800
+TITLE = "Evergreen Defense"
 FPS = 0
+PREF_LANGUAGE, DEFAULT_LANGUAGE = pygame.system.get_pref_locales()[0]["language"], "en"
+ORG, APP = "PixmoGames", "EvergreenDefense"
 
 # camera
 PROJ_SIZE = 10
@@ -19,30 +22,96 @@ REPLACE_SHADER = "replace"
 
 # shader uniforms
 SHADER_UNIFORMS = "2f 4f 2f 1f", "vPos", "vCol", "vUV", "vTexID"
-MAX_SAMPLERS = 2
+TEXTURES_UNIFORM = "textures"
+MAX_SAMPLERS = 3
 MAX_LIGHTS = 120
 
 WORLD_ATLAS = 0
-UI_ATLAS = 0
+UI_ATLAS = 1
+FONT_ATLAS = 2
 
 # sizes
 OBJ_SIZE = 1
 TREE_SIZE = OBJ_SIZE*2
 OXYGEN_SIZE = TREE_SIZE
 SPAWNER_SIZE = TREE_SIZE*2+1
+BASE_SIZE = 8
 TREE_HITBOX_SIZE = ((OBJ_SIZE*2)/8, (OBJ_SIZE*2)/8)
 HALF_COLLIDER_H = OBJ_SIZE/1.5
 
 # ui
-OUTLINE_W = 1
-OUTLINE_BW = 4
+S = 0.05
+MAIN_FONT = "main"
+
+OUTLINE_SIZES = {
+    "t": 1,
+    "s": 2,
+    #"o": 3,
+    #"m": 4,
+    "b": 6,
+    "v": 8,
+    "u": 10,
+    "i": 15,
+    "m": 20
+}
 CIRCLE_RADIUS = 100
-FONT_SCALE = 0.01
+FONT_SCALE = (0.02/6)*(0.6/1.5)
+
+PRB_H, PRB_C = 0.8, 0.4
+WORLD_BAR_XMUL, WORLD_BAR_H, WORLD_BAR_C = 1.2, 0.15, 0.04
+TL_BAR_W, TL_BAR_O = 3.5, 3.5*2
+LEVEL_CIRCLE_TL, LEVEL_CIRCLE_SIZE = (S, PRB_H/2+S), (1, 1)
+MONEY_ICON_W = 0.72
+
+DAMAGE_OVERLAY = "damageoverlay"
+SHOP_CARD_W, SHOP_CARD_C = 3, 0.5
+CARD_S = 0.15
+
+
+# colors
+DUST1_START = pygame.Color(255,150,0,255)
+DUST1_END = pygame.Color(255, 0, 255, 255)
+DUST2_START = pygame.Color(255,50,0,255)
+DUST2_END = pygame.Color(255, 20, 255, 255)
+
+TREE_OK_COL = (0, 0.7, 0.8, 0.6)
+TREE_BAD_COL = (1, 0, 0, 0.6)
+BUILDING_OK_COL = (0, 0.9, 0.3, 0.6)
+BUILDING_BAD_COL = (1, 0, 0, 0.6)
+PREVIW_RANGE_COL = (0, 0.7, 0.8, 0.4)
+PREVIW_ENERGY_COL = (0, 1, 0.3, 0.4)
+
+ENEMY_DAMAGE_COL = (1, 0, 0, 1)
+PORTAL_COL = (1.1, 1, 1, 0.6)
+WHITE = (1, 1, 1, 1)
+BLACK = (0, 0, 0, 1)
+
+BAR_OUTLINE = (1, 1, 1, 0.4)
+DARK_OUTLINE = (0, 0, 0, 1)
+HEALTH_BAR_FILL, HEALTH_BAR_BG = (1, 0, 0, 0.3), (0.4, 0, 0, 0.3)
+COOLDOWN_BAR_FILL, COOLDOWN_BAR_BG = (1, 1, 1, 0.4), (0.7, 0.7, 0.7, 0.4)
+XP_BAR_FILL, XP_BAR_BG = (0, 0.6, 1, 0.4), (0, 0.2, 0.5, 0.4)
+ENERGY_BAR_FILL, ENERGY_BAR_BG = (1, 0.9, 0, 0.6), (0.7, 0.6, 0, 0.6)
+
+MONEY_COL = (1, 0.8, 0, 1)
+LOCKED_IMG_COL = (1, 1, 1, 0.4)
+UNHOVER_OUTLINE, HOVER_OUTLINE = (0.6, 0.6, 0.6, 0.6), (1, 1, 1, 1)
+CARD_BG = (0, 0, 0, 0.6)
+
+STAR_COLORS = {
+    "blue": (0, 0.3, 1, 0.7),
+    "water": (0, 0.7, 1, 0.7),
+    "yellow": (1, 1, 0, 0.7),
+    "fluo": (1, 1, 0.3, 0.7),
+    "purple": (1, 0, 1, 0.7),
+    "orange": (1, 0.6, 0, 0.7),
+    "red": (1, 0.1, 0, 0.7)
+}
 
 # player
 PLAYER_LIGHT_RANGE = 16
 PLAYER_LIGHT_COL = (1,1,1)
-PLAYER_LIGHT_INTENSITY = 1.1
+PLAYER_LIGHT_INTENSITY = 1
 
 PLAYER_SPEED = 10
 PLAYER_IDLE_SPEED = 4
@@ -73,11 +142,15 @@ DUST_CHANCE_RANGE = 1300
 STAR_CHANCE_RANGE = 3500
 
 MAX_CAN_BE_ABOVE = 20
-ABOVE_MAX_DIST = 10
+ABOVE_MAX_DIST = 6
 
+WAVE_XP = 100
 WAVE_COOLDOWN = 1
 ENERGY_DISTANCE = 12
-PORTAL_ROT_SPEED = 0
+PORTAL_ROT_SPEED = 12
+BOT_SPEED = 6
+DAMAGE_OVERLAY_DURATION = 1.2
+EVENT_UI_DURATION = 2.5
 
 ATTACK_SINGLE, ATTACK_BURST = "single", "burst"
 ENEMY_DAMAGE_COOLDOWN = 0.5
@@ -87,32 +160,6 @@ CURE_AMOUNT = 2
 EFFECT_PARTICLE_SIZE = 0.5
 EFFECT_PARTICLE_SPEED = 4
 EFFECT_PARTICLE_DIST = 1.5
-
-# colors
-DUST1_START = pygame.Color(255,150,0,255)
-DUST1_END = pygame.Color(255, 0, 255, 255)
-DUST2_START = pygame.Color(255,50,0,255)
-DUST2_END = pygame.Color(255, 20, 255, 255)
-
-TREE_OK_COL = (0, 0.7, 0.8, 0.6)
-TREE_BAD_COL = (1, 0, 0, 0.6)
-BUILDING_OK_COL = (0, 0.9, 0.3, 0.6)
-BUILDING_BAD_COL = (1, 0, 0, 0.6)
-PREVIW_RANGE_COL = (0, 0.7, 0.8, 0.4)
-
-ENEMY_DAMAGE_COL = (1, 0, 0, 1)
-PORTAL_COL = (1.1, 1, 1, 0.6)
-WHITE = (1,1,1,1)
-
-STAR_COLORS = {
-    "blue": (0, 0.3, 1, 0.7),
-    "water": (0, 0.7, 1, 0.7),
-    "yellow": (1, 1, 0, 0.7),
-    "fluo": (1, 1, 0.3, 0.7),
-    "purple": (1, 0, 1, 0.7),
-    "orange": (1, 0.6, 0, 0.7),
-    "red": (1, 0.1, 0, 0.7)
-}
 
 # tiles
 ROCK_TILE = "rockblock"
@@ -136,10 +183,11 @@ TILES_ORES = {
 }
 
 ORES_DATA = {
-    IRON: [1.5, 30],
-    COPPER: [1.8, 25],
-    TITANIUM: [3, 18],
-    TIOPLASM: [5, 12]
+    # cooldown, stack_size, energy
+    IRON: [1.5, 30, 3],
+    COPPER: [1.8, 25, 5],
+    TITANIUM: [3, 18, 8],
+    TIOPLASM: [5, 12, 15]
 }
 
 ROCKY_TILES = [ROCK_TILE, IRON_TILE, COPPER_TILE, TITANIUM_TILE, TIOPLASM_TILE]
@@ -153,8 +201,10 @@ ROVE_TILE = "rove"
 
 SPAWNER_TILE = "enemyportal"
 PORTALFRAME_TILE = "portalframe"
+BASE_TILE = "playerbasehd"
 OXYGEN_TILE = "oxygen"
 MINER_OFF = "mineroff"
+ENERGY_TILES = ["energydist", "energysource"]
 
 TILES_SIDE = {
     GRASS_TILE: GRASS_SIDE_TILE,
@@ -163,6 +213,7 @@ TILES_SIDE = {
 
 # light
 SPAWNER_LIGHT_DATA = ([1, 0, 0], 12, 1.1)
+BASE_LIGHT_DATA = ([0, 0.7, 1], 12, 1.1)
 
 CHUNK_LIGHT_DATA = {
     GRASS_PLANT_TILE: ((1, 0, 1), 9, 0.5),

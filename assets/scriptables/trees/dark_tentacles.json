@@ -1,0 +1,30 @@
+{
+	"type": "TreeData",
+	"has_light": true,
+	"light_data": [
+		[
+			0.5,
+			0,
+			0.8
+		],
+		6,
+		0.5
+	],
+	"grow_time": 1,
+	"unlock_level": 8,
+	"price": 380,
+	"grow_xp": 0,
+	"plant_xp": 0,
+	"attack_range": 20,
+	"attack_mode": "spawn",
+	"attack_cooldown": 3,
+	"area": {
+		"tex_name": "tentacle",
+		"radius": 2.0,
+		"grow_time": 0.1,
+		"damage": 80.0
+	},
+	"energy": 150.0,
+	"energy_price": 30.0,
+	"place_xp": 210
+}

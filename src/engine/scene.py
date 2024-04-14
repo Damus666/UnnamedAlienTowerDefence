@@ -10,6 +10,9 @@ class Scene:
         self.manager = manager
         self.clear_color = (0, 0, 0, 1)
         self.init(*init_args)
+
+    def window_resized(self):
+        ...
     
     def init(self, *init_args):
         ...
@@ -48,12 +51,20 @@ class SceneManager:
                     self.quit()
                 elif event.type == pygame.VIDEORESIZE:
                     camera.window_resized(event.w, event.h)
+                    
                 self.scene.event(event)
             
             ctx.clear(self.scene.clear_color) 
             camera.update_mouse()
             camera.update_view()
             self.scene.update()
+            self.pre_render()
             self.scene.render()
-            camera.tick_window()
+            self.post_render()
+
+    def pre_render(self):
+        ...
+
+    def post_render(self):
+        ...
             

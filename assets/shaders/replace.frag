@@ -5,7 +5,7 @@ in vec2 fUV;
 in float fTexID;
 out vec4 oCol;
 
-uniform sampler2D textures[2];
+uniform sampler2D textures[3];
 
 void main() {
     vec4 texCol = texture2D(textures[int(fTexID)], fUV);

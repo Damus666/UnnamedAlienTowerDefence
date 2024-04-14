@@ -9,7 +9,8 @@
 
     "unlock_level": 1,
     "price": 0,
-    "grow_xp": 0,
+    "energy": 0,
+    "energy_price": 0,
     "plant_xp": 0,
 
     "attack_range": 0,

@@ -13,5 +13,6 @@
 	"speed": 4,
 	"health": 100,
 	"reward_mul": 1.2,
-	"buff": "cure"
+	"buff": "cure",
+	"xp": 25
 }

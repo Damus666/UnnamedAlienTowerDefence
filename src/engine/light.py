@@ -46,4 +46,4 @@ class LightBatch:
     @staticmethod
     def upload_uniform(static_batch, dynamic_batch, shader_name, max_lights):
         ctx.get_shader(shader_name)["numLights"] = min(len(static_batch.filtered)+len(dynamic_batch.filtered), max_lights)
-        ctx.get_shader(shader_name)["lightData"] = numpy.array(static_batch.buffer+dynamic_batch.buffer, dtype=numpy.float32)
+        ctx.get_shader(shader_name)["lightData"] = numpy.fromiter(static_batch.buffer+dynamic_batch.buffer, dtype=numpy.float32)

@@ -26,5 +26,8 @@
 		"damage": 20.0,
 		"size": 0.12,
 		"ticks": 6
-	}
+	},
+	"energy": 120.0,
+	"energy_price": 10.0,
+	"place_xp": 180
 }

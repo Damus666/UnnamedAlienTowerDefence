@@ -38,5 +38,8 @@
 		"tex_name": "cactusspike",
 		"dist": 7.0,
 		"damage": 40.0
-	}
+	},
+	"energy": 60.0,
+	"energy_price": 9.0,
+	"place_xp": 80
 }

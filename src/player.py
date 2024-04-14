@@ -1,31 +1,34 @@
 from .engine.prelude import *
 import pygame
 import typing
+import random
 if typing.TYPE_CHECKING:
     from .world import World
 
 from .consts import *
 from .tree import Tree
 from .building import BUILDING_CLASSES
+from .particle import MovingParticle
+from . import god
 
 class Player:
-    def __init__(self, world: "World"):
+    def __init__(self):
+        god.player = self
         self.pos = pygame.Vector2()
         self.speed = PLAYER_SPEED
         self.tool_idx = PICAXE_IDX
         self.energy = PLAYER_MAX_ENERGY
-        self.xp = 0
-        self.level = 10
+        self.xp = NEXT_LEVEL_START_XP-20
+        self.level = 5
         self.next_level_xp = NEXT_LEVEL_START_XP
         self.money = PLAYER_START_MONEY
-        
-        self.world = world
-        
+                
         self.status = "idle"
         self.y_status = "down"
         self.x_status = "left"
         self.seed_planting: TreeData = None
         self.building: BuildingData = None
+        self.level_up_time = -9999
                 
         self.rect = pygame.FRect(0,0, OBJ_SIZE, OBJ_SIZE)
         self.hitbox = pygame.FRect(0,0,OBJ_SIZE/1.4, OBJ_SIZE/4)
@@ -45,7 +48,7 @@ class Player:
         self.rect_batch.create_vao(LIT_SHADER, *SHADER_UNIFORMS)
         
         self.light = Light(tuple(self.pos), PLAYER_LIGHT_COL, PLAYER_LIGHT_RANGE, PLAYER_LIGHT_INTENSITY)
-        self.world.add_dynamic_light(self.light)
+        god.world.add_dynamic_light(self.light)
         
         self.unlit_rect_objs = [
             RectObj.null(), # block
@@ -54,6 +57,15 @@ class Player:
             RectObj.null(), 
         ]
         self.unlit_batch = FixedRectsBatch(self.unlit_rect_objs, True).create_vao(REPLACE_SHADER, *SHADER_UNIFORMS)
+        
+    def celebrate(self):
+        for i in range(80):
+            pos = (self.pos.x+random.uniform(-10, 10), self.pos.y + random.uniform(-10, 10))
+            size = random.uniform(0.08, 0.6)
+            col = (random.random(), random.random(), random.random(), 1)
+            dir = (random.uniform(-1, 1), random.uniform(-1, 1))
+            speed = random.uniform(6, 10)
+            MovingParticle(pos, (size, size), dir, 10, speed, "circle", 0, col).instantiate()
         
     def seed_unlocked(self, seed: TreeData):
         return self.level >= seed.unlock_level
@@ -67,9 +79,14 @@ class Player:
             self.xp = self.xp-self.next_level_xp
             self.level += 1
             self.next_level_xp *= NEXT_LEVEL_XP_MUL
+            self.level_up_time = pygame.time.get_ticks()
+            self.celebrate()
+            god.world.ui.build()
+        god.world.ui.update_static()
             
     def add_money(self, amount):
         self.money += amount
+        god.world.ui.update_static()
         
     def can_buy(self, money):
         return self.money >= money
@@ -78,18 +95,23 @@ class Player:
         self.money -= money
         if self.money < 0:
             self.money = 0
+        god.world.ui.update_static()
             
     def start_planting(self, seed: TreeData):
         self.stop_building()
+        if not god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range()
         self.seed_planting = seed
         
     def plant(self, pos):
-        tree = Tree(self.world, self.seed_planting, pos)
-        self.world.add_tree(tree)
+        tree = Tree(self.seed_planting, pos)
+        god.world.add_tree(tree)
         self.buy(self.seed_planting.price)
         self.add_xp(self.seed_planting.plant_xp)
         if not self.can_buy_seed(self.seed_planting):
             self.stop_planting()
+        if god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range(), god.world.ui.toggle_tree_range()
         
     def stop_planting(self):
         self.seed_planting = None
@@ -99,35 +121,39 @@ class Player:
         
     def start_building(self, building: BuildingData):
         self.stop_planting()
+        if not god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range()
         self.building = building
         
     def stop_building(self):
         self.building = None
         self.unlit_rect_objs[P_PREVIEW_I] = RectObj.null()
+        self.unlit_rect_objs[P_RANGEPREV_I] = RectObj.null()
         self.unlit_batch.update_rects(self.unlit_rect_objs)
         
     def build(self, pos):
-        building = BUILDING_CLASSES[self.building.name](self.world, self.building, pos)
-        self.world.add_building(building)
+        building = BUILDING_CLASSES[self.building.name](self.building, pos)
+        god.world.add_building(building)
         self.buy(self.building.price)
-        self.add_xp(self.building.buy_xp)
+        self.add_xp(self.building.place_xp)
         if not self.can_buy(self.building.price):
             self.stop_planting()
+        if god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range(), god.world.ui.toggle_tree_range()
     
     def update(self):
-        keys = pygame.key.get_pressed()
         dir = pygame.Vector2()
         
-        if keys[pygame.K_a]:
+        if god.settings.binds["left"].check_frame():
             dir.x -= 1
             self.x_status = "left"
-        if keys[pygame.K_d]:
+        if god.settings.binds["right"].check_frame():
             dir.x += 1
             self.x_status = "right"
-        if keys[pygame.K_w]:
+        if god.settings.binds["up"].check_frame():
             dir.y -= 1
             self.y_status = "up"
-        if keys[pygame.K_s]:
+        if god.settings.binds["down"].check_frame():
             dir.y += 1
             self.y_status = "down"
             
@@ -160,27 +186,30 @@ class Player:
                 
         if self.seed_planting is not None:
             tile_center = ((camera.world_mouse[0]), (camera.world_mouse[1]))
-            tile = self.world.get_tile(tile_center)
+            tile = god.world.get_tile(tile_center)
             if tile is not None:
                 tile_center = tile.rect.center
-            ok = self.world.can_build(self.seed_planting, tile_center, only_grassy=True)
+            ok = god.world.can_build(self.seed_planting, tile_center, only_grassy=True)
             self.unlit_rect_objs[P_PREVIEW_I] = RectObj(tile_center, None, (self.seed_planting.size, self.seed_planting.size), 
                                               TREE_OK_COL if ok else TREE_BAD_COL, WORLD_ATLAS,
-                                              self.world.assets.get_uvs(self.seed_planting.tex_name))
+                                              god.assets.get_uvs(self.seed_planting.tex_name))
             self.unlit_rect_objs[P_RANGEPREV_I] = RectObj(tile_center, None, (self.seed_planting.attack_range*2, self.seed_planting.attack_range*2),
-                                                PREVIW_RANGE_COL, WORLD_ATLAS, self.world.assets.get_uvs("circle_o"))
+                                                PREVIW_RANGE_COL, WORLD_ATLAS, god.assets.get_uvs("circle_o"))
             self.unlit_batch.update_rects(self.unlit_rect_objs)
             
         if self.building is not None:
             tile_center = ((camera.world_mouse[0]), (camera.world_mouse[1]))
-            tile = self.world.get_tile(tile_center)
+            tile = god.world.get_tile(tile_center)
             if tile is not None:
                 tile_center = tile.rect.center
-            ok = self.world.can_build(self.building, tile_center,
+            ok = god.world.can_build(self.building, tile_center,
                     self.building.only_ore, self.building.only_grass, self.building.only_oxygen, self.building.is_bot, self.building.need_energy)
             self.unlit_rect_objs[P_PREVIEW_I] = RectObj(tile_center, None, (self.building.size, self.building.size),
                                               BUILDING_OK_COL if ok else BUILDING_BAD_COL, WORLD_ATLAS,
-                                              self.world.assets.get_uvs(self.building.tex_name))
+                                              god.assets.get_uvs(self.building.tex_name))
+            if self.building.tex_name in ENERGY_TILES:
+                self.unlit_rect_objs[P_RANGEPREV_I] = RectObj(tile_center, None, (ENERGY_DISTANCE*2, ENERGY_DISTANCE*2),
+                                                PREVIW_ENERGY_COL, WORLD_ATLAS, god.assets.get_uvs("circle_o"))
             self.unlit_batch.update_rects(self.unlit_rect_objs)
             
     def update_buffer(self):
@@ -195,9 +224,9 @@ class Player:
         self.update_buffer()
                         
     def collisions(self, axis, dir):
-        colliding = self.hitbox.collidelistall(self.world.collision_rects)
+        colliding = self.hitbox.collidelistall(god.world.collision_rects)
         for other in colliding:
-            other = self.world.collision_rects[other]
+            other = god.world.collision_rects[other]
             if axis == "x":
                 self.hitbox.right = other.left if dir.x > 0 else self.hitbox.right
                 self.hitbox.left = other.right if dir.x < 0 else self.hitbox.left
@@ -209,9 +238,9 @@ class Player:
                 self.pos.y = self.rect.centery
                 
     def jump_collisions(self, dir):
-        colliding_down = self.hitbox.collidelist(self.world.jump_down_rects)
+        colliding_down = self.hitbox.collidelist(god.world.jump_down_rects)
         if colliding_down > 0:
-            colliding_down: pygame.FRect = self.world.jump_down_rects[colliding_down]
+            colliding_down: pygame.FRect = god.world.jump_down_rects[colliding_down]
             if dir.y > 0:
                 self.hitbox.top = colliding_down.bottom
                 self.rect.bottom = self.hitbox.bottom
@@ -225,48 +254,52 @@ class Player:
     def event(self, event: pygame.Event):
         if event.type == pygame.MOUSEWHEEL:
             camera.mouse_wheel(event.y, ZOOM_MUL, ZOOM_MIN, ZOOM_MAX)
-        if event.type == pygame.KEYDOWN:
-            if event.unicode.isdecimal():
-                idx = int(event.unicode)-1
-                try:
-                    self.start_planting(TreeData.get_all()[idx])
-                except:
-                    ...
-            #if event.key == pygame.K_p:
-            #    self.start_planting(TreeData.get("pepper"))
-            if event.key == pygame.K_c:
-                self.stop_planting()
-                self.stop_building()
-            #if event.key == pygame.K_s:
-            #    self.start_building(BuildingData.get(ENERGY_SOURCE))
-            #if event.key == pygame.K_d:
-            #    self.start_building(BuildingData.get(ENERGY_DISTRIBUTOR))
-            #if event.key == pygame.K_m:
-            #    self.start_building(BuildingData.get(MINER))
-            #if event.key == pygame.K_b:
-            #    self.start_building(BuildingData.get(BOT))
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
+            
+        if god.settings.binds["cancel_action"].check_event(event):
+            self.stop_planting()
+            self.stop_building()
+            if god.world.ui.tree_range_active:
+                god.world.ui.toggle_tree_range()
+            god.world.ui.shop.close()
+            return
+            
+        if god.settings.binds["tree_range"].check_event(event):
+            god.world.ui.toggle_tree_range()
+            return
+        
+        if god.settings.binds["shop"].check_event(event):
+            god.world.ui.shop.toggle()
+            self.stop_planting()
+            self.stop_building()
+            if god.world.ui.tree_range_active:
+                god.world.ui.toggle_tree_range()
+            return
+            
+        if god.settings.binds["place"].check_event(event):
             if self.seed_planting is not None:
                 tile_center = ((camera.world_mouse[0]), (camera.world_mouse[1]))
-                tile = self.world.get_tile(tile_center)
+                tile = god.world.get_tile(tile_center)
                 if tile is not None:
                     tile_center = tile.rect.center
-                if self.world.can_build(self.seed_planting, tile_center, only_grassy=True):
+                if god.world.can_build(self.seed_planting, tile_center, only_grassy=True):
                     self.plant(tile_center)
+                    return
+                
             if self.building is not None:
                 tile_center = ((camera.world_mouse[0]), (camera.world_mouse[1]))
-                tile = self.world.get_tile(tile_center)
+                tile = god.world.get_tile(tile_center)
                 if tile is not None:
                     tile_center = tile.rect.center
-                if self.world.can_build(self.building, tile_center,
+                if god.world.can_build(self.building, tile_center,
                     self.building.only_ore, self.building.only_grass, self.building.only_oxygen, self.building.is_bot, self.building.need_energy):
                     self.build(tile_center)
+                    return
         
     def render(self):
-        tex_array = self.world.assets["player"][self.status+(self.x_status if self.status == "runx" else self.y_status if self.status == "runy" else "")]
+        tex_array = god.assets.player[self.status+(self.x_status if self.status == "runx" else self.y_status if self.status == "runy" else "")]
         tex_array.set_idx(self.cur_anim.get_idx())
         tex_array.use(0)
         self.rect_batch.render()
-        self.world.assets.use()
+        god.assets.use()
         self.unlit_batch.render()
     

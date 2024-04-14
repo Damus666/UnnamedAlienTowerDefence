@@ -1,0 +1,35 @@
+{
+	"type": "TreeData",
+	"has_light": true,
+	"light_data": [
+		[
+			0,
+			0.6,
+			0.8
+		],
+		5,
+		0.4
+	],
+	"grow_time": 1,
+	"unlock_level": 1,
+	"price": 100,
+	"energy": 20.0,
+	"energy_price": 4.0,
+	"plant_xp": 0,
+	"attack_range": 10,
+	"attack_mode": "single",
+	"attack_cooldown": 1.5,
+	"projj": "speed size tex_name dist color damage",
+	"proj": {
+		"speed": 10,
+		"size": [
+			0.3,
+			0.3
+		],
+		"tex_name": "bushfruit",
+		"dist": 0,
+		"damage": 15
+	},
+	"size": 1,
+	"place_xp": 20
+}

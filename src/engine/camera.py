@@ -10,19 +10,18 @@ win_w: int = 0
 win_h: int = 0
 win_center: pygame.Vector2 = pygame.Vector2()
 clock: pygame.Clock = None
-desired_fps: float = 0
 proj_size: float = 1
 dt: float = 0
 unit: float = 0
 position: pygame.Vector2 = pygame.Vector2()
 zoom: float = 0.5
 
-def init_window(w: int, h: int, title: str, fps: float = 0, proj_scale: float = 1, extra_flags: int = 0):
-    global screen_surf, win_w, win_h, clock, desired_fps, proj_size, win_center
+def init_window(w: int, h: int, title: str, proj_scale: float = 1, extra_flags: int = 0):
+    global screen_surf, win_w, win_h, clock, proj_size, win_center
+    pygame.init()
     screen_surf = pygame.display.set_mode((w, h), pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF | extra_flags)
     win_w, win_h = screen_surf.get_size()
     clock = pygame.Clock()
-    desired_fps = fps
     proj_size = proj_scale
     win_center = pygame.Vector2(win_w//2, win_h//2)
     pygame.display.set_caption(title)
@@ -35,6 +34,8 @@ def window_resized(w: int, h: int):
     win_w, win_h = w, h
     win_center = pygame.Vector2(win_w//2, win_h//2)
     make_proj()
+    update_mouse()
+    update_view()
 
 def make_proj():
     global proj_mat4, unit, proj_ui_mat4
@@ -54,21 +55,25 @@ screen_mouse: pygame.Vector2 = pygame.Vector2()
 ui_mouse: pygame.Vector2 = pygame.Vector2()
 world_mouse: pygame.Vector2 = pygame.Vector2()
 rect = pygame.FRect(0, 0, 0, 0)
-ui_rect = pygame.FRect(0, 0, 0, 0)
+world_rect = pygame.FRect(0, 0, 0, 0)
+keys = []
+buttons = []
         
 def update_view():
-    global view_mat4, rect, ui_rect
+    global view_mat4, rect, world_rect
     view_mat4 = glm.translate(glm.vec3(-position.x, -position.y, 0))
-    ui_rect = pygame.FRect(-win_w/unit, -win_h/unit, (win_w/unit)*2, (win_h/unit)*2)
-    rect = pygame.FRect(screen_to_world(pygame.Vector2(0, 0)), (ui_rect.w/zoom, ui_rect.h/zoom))
+    rect = pygame.FRect(-win_w/unit, -win_h/unit, (win_w/unit)*2, (win_h/unit)*2)
+    world_rect = pygame.FRect(screen_to_world(pygame.Vector2(0, 0)), (rect.w/zoom, rect.h/zoom))
     
 def update_mouse():
-    global screen_mouse, ui_mouse, world_mouse
+    global screen_mouse, ui_mouse, world_mouse, keys, buttons
     screen_mouse = pygame.Vector2(pygame.mouse.get_pos())
     ui_mouse = screen_to_ui(screen_mouse)
     world_mouse = screen_to_world(screen_mouse)
+    keys = pygame.key.get_pressed()
+    buttons = pygame.mouse.get_pressed()
     
-def tick_window():
+def tick_window(desired_fps):
     global dt
     pygame.display.flip()
     dt = min(clock.tick(desired_fps)/1000, 0.3)

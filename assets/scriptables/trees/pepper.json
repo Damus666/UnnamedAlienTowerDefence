@@ -31,5 +31,8 @@
 		"name": "fire",
 		"ticks": 5,
 		"damage": 25
-	}
+	},
+	"energy": 150.0,
+	"energy_price": 30.0,
+	"place_xp": 310
 }

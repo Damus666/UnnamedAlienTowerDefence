@@ -2,33 +2,65 @@ from .engine.prelude import *
 import random
 
 from .consts import *
-from .particle import Proj
 from .attack import ATTACK_CLASSES, TreeAttack
+from .ui import ProgressBar
+from . import god
 
 class Tree:
-    def __init__(self, world, tree: TreeData, pos):
-        self.world, self.tree = world, tree
+    def __init__(self, tree: TreeData, pos):
+        self.tree = tree
         self.grown = False
         self.size_mul = 0.5
         self.start_time = pygame.time.get_ticks()
         self.rect = pygame.FRect(0, 0, tree.size, tree.size)
         self.rect.center = pos
         self.pos = pygame.Vector2(pos)
+        #/2 temp
+        self.energy = self.tree.energy/2
         self.rect_obj = RectObj(pos, None, (tree.size*self.size_mul, tree.size*self.size_mul), None, 
-                                WORLD_ATLAS, self.world.assets.get_uvs(self.tree.tex_name))
+                                WORLD_ATLAS, god.assets.get_uvs(self.tree.tex_name))
+        
         self.attacker: TreeAttack = ATTACK_CLASSES[self.tree.attack_mode](self)
+        
+        self.progress_bar = ProgressBar((self.rect.w*WORLD_BAR_XMUL, WORLD_BAR_H), WORLD_BAR_C, 1, None, COOLDOWN_BAR_FILL, COOLDOWN_BAR_BG, DARK_OUTLINE, outline="m",
+                                        center=(self.rect.centerx, self.rect.bottom+WORLD_BAR_H))
+        self.energy_bar = ProgressBar((self.rect.w*WORLD_BAR_XMUL, WORLD_BAR_H), WORLD_BAR_C, self.tree.energy, None, ENERGY_BAR_FILL, ENERGY_BAR_BG, DARK_OUTLINE, outline="m",
+                                      center=(self.rect.centerx, self.rect.bottom+WORLD_BAR_H*2.5))
+        
+    def consume_energy(self):
+        self.energy -= self.tree.energy_price
+        if self.energy <= 0:
+            self.energy = 0
+            
+    def restore_energy(self, amount):
+        self.energy += amount
+        if self.energy > self.tree.energy:
+            self.energy = self.tree.energy
+            god.player.add_xp(self.tree.plant_xp/10)
+        
+    def get_bar_rect_objs(self):
+        if self.energy != self.energy_bar.val:
+            self.energy_bar.set_value(self.energy)
+        if not self.grown:
+            self.progress_bar.set_value(self.size_mul-0.5, 1-0.5)
+        else:
+            val = min(self.tree.attack_cooldown,((pygame.time.get_ticks()-self.attacker.last_attack)/1000))
+            if self.progress_bar.val != val:
+                self.progress_bar.set_value(val, self.tree.attack_cooldown)
+                
+        return self.progress_bar.get_rect_objs()+self.energy_bar.get_rect_objs()
         
     def update_rect_obj(self):
         self.rect_obj.update_positions(self.rect.center, None, (self.tree.size*self.size_mul, self.tree.size*self.size_mul))
-        self.world.update_buildings_batch()
+        god.world.update_buildings_batch()
         
     def finish_growing(self):
         self.grown = True
         self.size_mul = 1
-        self.world.player.add_xp(self.tree.grow_xp)
+        god.player.add_xp(self.tree.plant_xp)
         self.update_rect_obj()
         if self.tree.has_light:
-            self.world.refresh_tree_lights()
+            god.world.refresh_tree_lights()
             #self.light = Light(self.rect.center, *self.tree.light_data)
             #self.world.add_static_light(self.light)
     

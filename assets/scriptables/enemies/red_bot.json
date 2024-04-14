@@ -14,5 +14,6 @@
 	"health": 180,
 	"reward_mul": 1.2,
 	"buff": "rage",
-	"size": 1
+	"size": 1,
+	"xp": 70
 }

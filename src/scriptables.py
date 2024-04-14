@@ -51,8 +51,9 @@ class TreeData(Scriptable):
     unlock_level: int
     price: int
     plant_xp = 0
-    grow_xp = 0
-    
+    energy: float
+    energy_price: float
+        
     attack_range: float
     attack_cooldown: float
     attack_mode: str
@@ -84,6 +85,7 @@ class EnemyData(Scriptable):
     health: float
     reward: float
     reward_mul: float = 1
+    xp: float = 0
     
     buff: str
     has_buff = False
@@ -115,8 +117,7 @@ class BuildingData(Scriptable):
         
     tex_name: str
     
-    buy_xp: int
-    place_xp: int
+    place_xp: int = 0
     
     def init(self):
         if self.optional("tex_name"):
@@ -136,6 +137,7 @@ class MapWaveStage(TypedDict):
     enemy_name: str
     enemy_amount: int
     spawn_cooldown: float
+    xp: float
                 
 class MapData(Scriptable):
     data_path: str

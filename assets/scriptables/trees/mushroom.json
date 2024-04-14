@@ -35,5 +35,8 @@
 		"name": "gelly",
 		"ticks": 4,
 		"speed_mul": 0.4
-	}
+	},
+	"energy": 40.0,
+	"energy_price": 8.0,
+	"place_xp": 60
 }

@@ -5,6 +5,11 @@ import numpy
 import random
 from . import ctx, buffer
 
+def upload_samplers(size: int, uniform_name: str, *shader_names: str, ):
+    data = numpy.fromiter(list(range(size)), dtype=numpy.int32)
+    for shader_name in shader_names:
+        ctx.get_shader(shader_name)[uniform_name].write(data)
+
 class Texture:
     def __init__(self, size: tuple[int, int], data: bytes, name: str = "unnamed"):
         self.size: tuple[int, int] = size
@@ -48,34 +53,7 @@ class TextureArray:
         self.tex_index = index
         
     def use(self, location: int):
-        self.textures[self.tex_index].use(location)
-    
-class TextureBatch:    
-    def __init__(self, textures: list[Texture|TextureArray]):
-        self.textures: list[Texture|TextureArray] = list(textures)
-        self.id_locations: dict[int, int] = {texture.ID:i for i, texture in enumerate(textures)}
-        self.names_locations: dict[str, int] = {texture.name:i for i, texture in enumerate(textures)}
-        
-    def add_texture(self, texture: Texture|TextureArray):
-        self.textures.append(texture)
-        self.id_locations[texture.ID] = len(self.textures)-1
-        self.names_locations[texture.name] = len(self.textures)-1
-        
-    def get_location(self, texture_name: str) -> int:
-        return self.names_locations[texture_name]
-            
-    def get_id_location(self, texture: Texture|TextureArray) -> int:
-        return self.id_locations[texture.ID]
-        
-    def use(self):
-        for i, tex in enumerate(self.textures):
-            tex.use(i)
-        
-    @staticmethod
-    def upload_samplers(size: int, uniform_name: str, *shader_names: str, ):
-        data = numpy.array(list(range(size)), dtype=numpy.int32)
-        for shader_name in shader_names:
-            ctx.get_shader(shader_name)[uniform_name].write(data)
+        self.textures[self.tex_index].use(location)  
 
 class Spritesheet:
     def __init__(self, name):
@@ -110,9 +88,10 @@ class Spritesheet:
         self.texture = Texture.from_surface(self.sheet_surf, self.name)
         
 class SpriteAtlas:
-    def __init__(self):
+    def __init__(self, mul=3):
         self.surfaces: dict[str, pygame.Surface] = {}
         self.uvs: dict[str] = {}
+        self.mul = mul
         
     def add(self, surface: pygame.Surface, name: str):
         self.surfaces[name] = surface
@@ -123,24 +102,31 @@ class SpriteAtlas:
     def build(self, name):
         surfs = sorted(list(self.surfaces.values()), key= lambda surf: surf.get_height(), reverse=True)
         inv_surfs = {id(surf):name for name, surf in self.surfaces.items()}
-        self.height = int(surfs[0].get_width()*2)
+        self.height = int(surfs[0].get_width()*self.mul)
         positions = []
         x = y = bw = 0
         for surf in surfs:
             w, h = surf.get_size()
             if self.height-y < h:
                 y = 0
-                x += bw+1
+                x += bw+2
                 bw = 0
             if w > bw:
                 bw = w
             positions.append([surf, w, h, x, y])
-            y += h+1
+            y += h+2
         self.width = x+bw
-        main_surf = pygame.Surface((self.width, int(self.height*1.1)), pygame.SRCALPHA)
+        main_surf = pygame.Surface((self.width, int(self.height*1.01)), pygame.SRCALPHA)
         main_surf.fill(0)
         for surf, w, h, x, y in positions:
-            self.uvs[inv_surfs[id(surf)]] = buffer.rect_uvs_atlas(self.width, int(self.height*1.1), w, h, x, y)
+            surf: pygame.Surface
+            self.uvs[inv_surfs[id(surf)]] = buffer.rect_uvs_atlas(self.width, int(self.height*1.01), w, h, x, y)
+            a = surf.get_at((0, 0)).a
+            b = surf.get_at((w-1, h-1)).a
+            c = surf.get_at((0, h-1)).a
+            d = surf.get_at((w-1, 0)).a
+            if a >= 255 and b >= 255 and c >= 255 and d >= 255:
+                main_surf.blit(pygame.transform.scale(surf, (w+2, h+2)), (x-1, y-1))
             main_surf.blit(surf, (x, y))
         pygame.image.save(main_surf, f"stuff/{name}.png")
         self.texture = Texture.from_surface(main_surf, name)

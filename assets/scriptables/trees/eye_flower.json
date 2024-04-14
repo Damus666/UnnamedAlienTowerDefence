@@ -28,5 +28,8 @@
 		],
 		"tex_name": "eyeflowerproj",
 		"damage": 8
-	}
+	},
+	"energy": 50.0,
+	"energy_price": 3.0,
+	"place_xp": 40
 }
