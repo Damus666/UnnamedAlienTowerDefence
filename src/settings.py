@@ -28,7 +28,7 @@ class KC:
 
 class Keybind:
     def __init__(self, bind:KC, *alts:KC):
-        self.bind, self.alts = bind, alts
+        self.bind, self.alts = bind, list(alts)
 
     def check_event(self, event: pygame.Event):
         if self.bind.check_event(event):
@@ -50,8 +50,11 @@ class LanguageManager:
     def __init__(self):
         self.langs = {}
         for file in os.listdir(f"assets/languages"):
-            with open(f"assets/languages/{file}", "r") as lfile:
-                self.langs[file.split(".")[0]] = json.load(lfile)
+            with open(f"assets/languages/{file}", "rb") as lfile:
+                self.langs[file.split(".")[0]] = json.load(lfile,)
+                
+    def names(self):
+        return list(self.langs.keys())
                 
     def get(self, name) -> str:
         return self.langs[god.settings.lang][name]
@@ -66,6 +69,7 @@ class Settings:
     def __init__(self):
         self.fps = FPS
         self.fps_counter = True
+        self.confetti = True
         self.scaled_mul = 1
         self.ui_high_res = True
         self.max_lights = MAX_LIGHTS 
@@ -84,22 +88,23 @@ class Settings:
             "cancel_action": Keybind(KC(pygame.K_ESCAPE)),
             "ui_click": Keybind(KC(pygame.BUTTON_LEFT, "mouse"))
         }
+        self.save("default_settings")
         self.load()
 
-    def load(self):
-        if os.path.exists(f"{Settings.user_path}settings.json"):
-            with open(f"{Settings.user_path}settings.json", "r") as file:
+    def load(self, filename="settings"):
+        if os.path.exists(f"{Settings.user_path}{filename}.json"):
+            with open(f"{Settings.user_path}{filename}.json", "r") as file:
                 data = json.load(file)
-                for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol"]:
+                for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti"]:
                     setattr(self, name, data[name])
                 for name, kb_data in data["binds"].items():
                     self.binds[name] = Keybind(KC(kb_data["main"]["code"], kb_data["main"]["type"]),
                                             *[KC(alt_data["code"], alt_data["type"]) for alt_data in kb_data["alts"]])
 
-    def save(self):
-        with open(f"{Settings.user_path}settings.json", "w") as file:
+    def save(self, filename="settings"):
+        with open(f"{Settings.user_path}{filename}.json", "w") as file:
             data = {
-                name: getattr(self, name) for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol"]
+                name: getattr(self, name) for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti"]
             }
             data["binds"] = {name: {
                                         "main": {"code": kb.bind.code, "type": kb.bind.type}, 
@@ -109,9 +114,13 @@ class Settings:
                              for name, kb in self.binds.items()}
             json.dump(data, file)
             
+    def reset_settings(self):
+        self.load("default_settings")
+            
     @staticmethod
     def del_settings():
-        os.remove(Settings.user_path+"settings.json")
+        if os.path.exists(f"{Settings.user_path}settings.json"):
+            os.remove(Settings.user_path+"settings.json")
     
     @staticmethod
     def get_user_path():

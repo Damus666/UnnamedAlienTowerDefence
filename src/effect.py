@@ -8,13 +8,13 @@ from . import god
 class AttackEffect:
     def __init__(self, enemy, name, ticks):
         self.enemy, self.name, self.ticks = enemy, name, ticks
-        self.last_tick = pygame.time.get_ticks()
+        self.last_tick = camera.get_ticks()
         self.ticks_passed = 0
         
     def update(self):
-        if pygame.time.get_ticks() - self.last_tick > TICK*1000:
+        if camera.get_ticks() - self.last_tick > TICK*1000:
             self.ticks_passed += 1
-            self.last_tick = pygame.time.get_ticks()
+            self.last_tick = camera.get_ticks()
             self.tick()
             if self.ticks_passed >= self.ticks:
                 self.destroy()
@@ -92,13 +92,13 @@ class CureBuff(EnemyBuff):
         self.last_heal = 0
         
     def can_damage(self, is_effect):
-        self.last_heal = pygame.time.get_ticks()
+        self.last_heal = camera.get_ticks()
         return True
         
     def update(self):
         if self.enemy.health < self.enemy.enemy.health:
-            if pygame.time.get_ticks() - self.last_heal > BUFF_HEAL_COOLDOWN*1000:
-                self.last_heal = pygame.time.get_ticks()
+            if camera.get_ticks() - self.last_heal > BUFF_HEAL_COOLDOWN*1000:
+                self.last_heal = camera.get_ticks()
                 self.enemy.heal(BUFF_HEAL_AMOUNT)
                 self.spawn_effect("plus", (0, 1, 0, 1))
             

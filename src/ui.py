@@ -37,6 +37,28 @@ class ProgressBar:
 def image(topleft, size, name, col=None, center=None):
     return [RectObj(center, topleft, size, col, UI_ATLAS, god.assets.ui_atlas.get_uvs(name))]
 
+def button(topleft, size, outline_col, text, text_size, outline="m", center=None):
+    if center is not None:
+        topleft = (center[0]-size[0]/2, center[1]-size[1]/2)
+    else:
+        center = (topleft[0]+size[0]/2, topleft[1]+size[1]/2)
+    return (
+        panel_rect_objs(size, BTN_C, topleft, BTN_BG)
+        + panel_outline_rect_objs(size, BTN_C, topleft, outline_col, outline)
+        + font.render_single_center(MAIN_FONT, text, center, text_size)
+    )
+    
+def checkbox(center, size, outline_col, on, outline="m"):
+    size = (size, size)
+    topleft = (center[0]-size[0]/2, center[1]-size[1]/2)
+    res = (
+        panel_rect_objs(size, BTN_C, topleft, BTN_BG)
+        + panel_outline_rect_objs(size, BTN_C, topleft, outline_col, outline)
+    )
+    if on:
+        res += image((center[0]-size[0]/4, center[1]-size[1]/4), (size[0]/2, size[1]/2), "circle")
+    return res
+
 def panel_rect_objs(size, c, tl, color=(1, 1, 1, 1), prb=False):
     x, y = tl
     w, h = size

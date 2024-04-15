@@ -35,6 +35,7 @@ class World(Scene):
         self.static_light_batch, self.dynamic_light_batch = LightBatch(self.light_filter), LightBatch(self.light_filter)
         self.player = Player()
         self.ui = WorldUI()
+        self.ui.pause.settings.build()
         
         self.trees: list[Tree] = []
         self.buildings: list[Building] = []
@@ -76,10 +77,13 @@ class World(Scene):
         self.builder.tile_rects_batch.update_rects()
         self.builder.tile_rects_batch.free_rect_objs()
         self.remove_static_light(self.builder.spawner_light)
+        self.can_be_above_unlit.remove(self.builder.portal_tile)
+        self.can_be_above.remove(self.builder.portalframe_tile)
+        self.collision_rects.remove(self.builder.portal_hitbox)
         
     def damage(self, damage):
         self.health -= damage
-        self.last_damage = pygame.time.get_ticks()
+        self.last_damage = camera.get_ticks()
         if self.health <= 0:
             print("Game over lmao")
             self.manager.quit()
@@ -272,6 +276,7 @@ class World(Scene):
         return sorted(above_rect_objs, key=lambda r: r.pos[1])
     
     def event(self, event: pygame.Event):
+        self.ui.pause.settings.event(event)
         self.player.event(event)
         if event.type == pygame.VIDEORESIZE:
             god.app.screen_buffer.refresh_buffer(event.w, event.h, god.settings.scaled_mul)

@@ -8,15 +8,17 @@ class Assets:
         self.player = self.load_player()
         
         self.world_atlas = SpriteAtlas()
-        self.ui_atlas = SpriteAtlas()
-        self.font_atlas = SpriteAtlas(4)
+        self.ui_atlas = SpriteAtlas(2)
+        self.font_atlas = SpriteAtlas(20)
         
         self.load_folders("tiles", "trees", "buildings", "other", "particles", "enemies", "icons", "items")
         self.load_ui_folders("items", "trees", "buildings")
         self.load_named_folders("plants", "stars")
         self.load_pg()
         font.add_font(MAIN_FONT, pygame.Font("assets/fonts/alienbig.ttf", 300), 
-                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE)
+                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE, "€äöüßÄÖÜőáúűóöüúéŐÚ", 
+                      "אבגדהוזחטיכךלמםנןסעפףתץקרשת", pygame.Font("assets/fonts/hebrew.ttf", 300),
+                      "ج ح خ ه ع غ ف ق ث ص ض ة ك م ن ت ا ل ب ي س ش ى و ر ز د ذ ط ظ ء", pygame.Font("assets/fonts/arabic.ttf", 300))
         
         self.world_atlas.build("world_atlas")
         self.ui_atlas.build("ui_atlas")

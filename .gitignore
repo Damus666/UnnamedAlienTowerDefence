@@ -4,6 +4,7 @@
 __pycache__/
 test.*
 temp.*
+stats.prof
 
 build/
 dist/

@@ -1,14 +1,12 @@
 from .engine.prelude import *
 import pygame
-import typing
 import random
-if typing.TYPE_CHECKING:
-    from .world import World
 
 from .consts import *
 from .tree import Tree
 from .building import BUILDING_CLASSES
 from .particle import MovingParticle
+from .menu_ui import Indicator
 from . import god
 
 class Player:
@@ -18,8 +16,8 @@ class Player:
         self.speed = PLAYER_SPEED
         self.tool_idx = PICAXE_IDX
         self.energy = PLAYER_MAX_ENERGY
-        self.xp = NEXT_LEVEL_START_XP-20
-        self.level = 5
+        self.xp = 0
+        self.level = 1
         self.next_level_xp = NEXT_LEVEL_START_XP
         self.money = PLAYER_START_MONEY
                 
@@ -59,13 +57,15 @@ class Player:
         self.unlit_batch = FixedRectsBatch(self.unlit_rect_objs, True).create_vao(REPLACE_SHADER, *SHADER_UNIFORMS)
         
     def celebrate(self):
-        for i in range(80):
-            pos = (self.pos.x+random.uniform(-10, 10), self.pos.y + random.uniform(-10, 10))
-            size = random.uniform(0.08, 0.6)
+        if not god.settings.confetti:
+            return
+        for _ in range(350):
+            pos = (self.pos.x+random.uniform(-20, 20), self.pos.y + random.uniform(-20, 20))
+            size = random.uniform(0.08, 0.5)
             col = (random.random(), random.random(), random.random(), 1)
-            dir = (random.uniform(-1, 1), random.uniform(-1, 1))
-            speed = random.uniform(6, 10)
-            MovingParticle(pos, (size, size), dir, 10, speed, "circle", 0, col).instantiate()
+            dir = pygame.Vector2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
+            speed = random.uniform(5, 7)
+            MovingParticle(pos, (size, size), dir, 15, speed, "circle", 0, col).instantiate()
         
     def seed_unlocked(self, seed: TreeData):
         return self.level >= seed.unlock_level
@@ -75,17 +75,19 @@ class Player:
     
     def add_xp(self, amount):
         self.xp += amount
+        Indicator("xp", amount)
         if self.xp >= self.next_level_xp:
             self.xp = self.xp-self.next_level_xp
             self.level += 1
             self.next_level_xp *= NEXT_LEVEL_XP_MUL
-            self.level_up_time = pygame.time.get_ticks()
+            self.level_up_time = camera.get_ticks()
             self.celebrate()
             god.world.ui.build()
         god.world.ui.update_static()
             
     def add_money(self, amount):
         self.money += amount
+        Indicator("money", amount)
         god.world.ui.update_static()
         
     def can_buy(self, money):
@@ -107,7 +109,7 @@ class Player:
         tree = Tree(self.seed_planting, pos)
         god.world.add_tree(tree)
         self.buy(self.seed_planting.price)
-        self.add_xp(self.seed_planting.plant_xp)
+        self.add_xp(self.seed_planting.place_xp)
         if not self.can_buy_seed(self.seed_planting):
             self.stop_planting()
         if god.world.ui.tree_range_active:
@@ -252,22 +254,33 @@ class Player:
             
         
     def event(self, event: pygame.Event):
-        if event.type == pygame.MOUSEWHEEL:
+        if god.world.ui.pause.settings.listening:
+            return
+        
+        if event.type == pygame.MOUSEWHEEL and event.y*camera.time_scale != 0:
             camera.mouse_wheel(event.y, ZOOM_MUL, ZOOM_MIN, ZOOM_MAX)
             
         if god.settings.binds["cancel_action"].check_event(event):
+            done = self.seed_planting is not None or self.building is not None or god.world.ui.tree_range_active or god.world.ui.shop.is_open
+            
             self.stop_planting()
             self.stop_building()
             if god.world.ui.tree_range_active:
                 god.world.ui.toggle_tree_range()
             god.world.ui.shop.close()
+            
+            if done:
+                return
+            
+        if god.settings.binds["pause"].check_event(event):
+            god.world.ui.pause.toggle()
             return
             
         if god.settings.binds["tree_range"].check_event(event):
             god.world.ui.toggle_tree_range()
             return
         
-        if god.settings.binds["shop"].check_event(event):
+        if not god.world.ui.pause.is_open and god.settings.binds["shop"].check_event(event):
             god.world.ui.shop.toggle()
             self.stop_planting()
             self.stop_building()

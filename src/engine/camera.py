@@ -15,6 +15,17 @@ dt: float = 0
 unit: float = 0
 position: pygame.Vector2 = pygame.Vector2()
 zoom: float = 0.5
+time_scale = 1
+ticks = 0
+pause_time = 0
+paused_ticks = 0
+screen_mouse: pygame.Vector2 = pygame.Vector2()
+ui_mouse: pygame.Vector2 = pygame.Vector2()
+world_mouse: pygame.Vector2 = pygame.Vector2()
+rect = pygame.FRect(0, 0, 0, 0)
+world_rect = pygame.FRect(0, 0, 0, 0)
+keys = []
+buttons = []
 
 def init_window(w: int, h: int, title: str, proj_scale: float = 1, extra_flags: int = 0):
     global screen_surf, win_w, win_h, clock, proj_size, win_center
@@ -51,14 +62,6 @@ def make_proj():
         proj_ui_mat4 = glm.ortho(-proj_size, proj_size, proj_size*inv_ratio, -proj_size*inv_ratio, -1000, 1000)
         unit = win_w/proj_size
         
-screen_mouse: pygame.Vector2 = pygame.Vector2()
-ui_mouse: pygame.Vector2 = pygame.Vector2()
-world_mouse: pygame.Vector2 = pygame.Vector2()
-rect = pygame.FRect(0, 0, 0, 0)
-world_rect = pygame.FRect(0, 0, 0, 0)
-keys = []
-buttons = []
-        
 def update_view():
     global view_mat4, rect, world_rect
     view_mat4 = glm.translate(glm.vec3(-position.x, -position.y, 0))
@@ -76,7 +79,7 @@ def update_mouse():
 def tick_window(desired_fps):
     global dt
     pygame.display.flip()
-    dt = min(clock.tick(desired_fps)/1000, 0.3)
+    dt = min(clock.tick(desired_fps)/1000, 0.3)*time_scale
     
 def upload_uniforms(*shader_names: str):
     """shader uniforms: proj: mat4, view: mat4"""
@@ -99,4 +102,19 @@ def screen_to_world(screen_pos: pygame.Vector2):
 
 def screen_to_ui(screen_pos: pygame.Vector2):
     return (screen_pos-win_center)/(unit/2)
+
+def pause():
+    global time_scale, pause_time
+    time_scale = 0
+    pause_time = pygame.time.get_ticks()
+    
+def unpause():
+    global time_scale, paused_ticks
+    time_scale = 1
+    paused_ticks += (pygame.time.get_ticks()-pause_time)
+    
+def get_ticks():
+    if time_scale == 0:
+        return pygame.time.get_ticks()-(pygame.time.get_ticks()-pause_time)-paused_ticks
+    return pygame.time.get_ticks()-paused_ticks
     

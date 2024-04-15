@@ -34,11 +34,11 @@ class Tile:
 class BubbleSpawner:
     def __init__(self, pos):
         self.pos = (pos[0], pos[1]-0.11)
-        self.last_bubble = pygame.time.get_ticks()
+        self.last_bubble = camera.get_ticks()
         
     def update(self):
-        if pygame.time.get_ticks()-self.last_bubble > 0.15*1000:
-            self.last_bubble = pygame.time.get_ticks()
+        if camera.get_ticks()-self.last_bubble > 0.15*1000:
+            self.last_bubble = camera.get_ticks()
             dir = (random.uniform(-0.19, 0.19), -1)
             size = (random.uniform(0.11, 0.31))
             god.world.add_uparticle(MovingParticle(self.pos, (size, size), dir, 3.5, random.uniform(0.8, 1.2), "bubble"))
@@ -53,12 +53,12 @@ class EnemyWaveSpawner:
         self.stages_amount = len(self.wave_stages)
         self.wave_idx = 0
         self.wave_active = False
-        self.wave_end_time = pygame.time.get_ticks()
+        self.wave_end_time = camera.get_ticks()
         self.map_complete = False
         self.spawned_emenies = 0
         self.killed_enemies = 0
         self.stage_active = True
-        self.stage_end_time = pygame.time.get_ticks()
+        self.stage_end_time = camera.get_ticks()
         self.stages_completed = False
         self.stage_spanwed_enemies = 0
         self.last_enemy = 0
@@ -69,24 +69,24 @@ class EnemyWaveSpawner:
         if self.map_complete:
             return
         if not self.wave_active:
-            if pygame.time.get_ticks() - self.wave_end_time > WAVE_COOLDOWN*1000:
+            if camera.get_ticks() - self.wave_end_time > WAVE_COOLDOWN*1000:
                 self.start_wave()
         else:
             if not self.stages_completed:
                 if self.stage_active:
                     if self.stage_spanwed_enemies < self.current_stage["enemy_amount"]:
-                        if pygame.time.get_ticks() - self.last_enemy > self.current_stage["spawn_cooldown"]*1000:
+                        if camera.get_ticks() - self.last_enemy > self.current_stage["spawn_cooldown"]*1000:
                             self.spawn_enemy()
                     else:
                         self.end_stage()
                 else:
-                    if pygame.time.get_ticks() - self.stage_end_time > self.current_stage["wait_time"]*1000:
+                    if camera.get_ticks() - self.stage_end_time > self.current_stage["wait_time"]*1000:
                         self.start_stage()
             if self.spawned_emenies > 0 and self.killed_enemies == self.spawned_emenies:
                 self.end_wave()
                 
     def spawn_enemy(self):
-        self.last_enemy = pygame.time.get_ticks()
+        self.last_enemy = camera.get_ticks()
         enemy = Enemy(EnemyData.get(self.current_stage["enemy_name"]), god.world.builder.portal_tile.rect.center)
         god.world.add_enemy(enemy)
         self.spawned_emenies += 1
@@ -104,12 +104,12 @@ class EnemyWaveSpawner:
         god.player.add_xp(self.current_stage["xp"])
         self.current_stage = self.wave_stages[self.stage_idx]
         self.stage_active = False
-        self.stage_end_time = pygame.time.get_ticks()
+        self.stage_end_time = camera.get_ticks()
         
     def start_stage(self):
         self.stage_active = True
         self.stage_spanwed_enemies = 0
-        self.last_enemy = pygame.time.get_ticks()
+        self.last_enemy = camera.get_ticks()
                 
     def start_wave(self):
         self.wave_active = True
@@ -123,12 +123,12 @@ class EnemyWaveSpawner:
             self.map_complete = True
             self.wave_idx -= 1
             god.player.celebrate()
-            self.wave_complete_time = pygame.time.get_ticks()
+            self.wave_complete_time = camera.get_ticks()
             return
         god.player.add_xp(WAVE_XP*god.player.level)
         self.wave_stages = god.world.map.waves[self.wave_idx]
         self.wave_active = False
-        self.wave_end_time = pygame.time.get_ticks()
+        self.wave_end_time = camera.get_ticks()
         self.current_stage = self.wave_stages[0]
         self.stage_idx = 0
         self.stages_amount = len(self.wave_stages)
@@ -180,6 +180,7 @@ class WorldBuilder:
         hitbox = pygame.FRect(0, 0, self.portal_tile.rect.w/1.4, OBJ_SIZE/2)
         hitbox.midbottom = self.portalframe_tile.rect.midbottom
         god.world.collision_rects.append(hitbox)
+        self.portal_hitbox = hitbox
         
     def add_base(self):
         self.base_tile = Tile((god.world.follow_pos[-1][0]-BASE_SIZE/2, god.world.follow_pos[-1][1]-BASE_SIZE), BASE_SIZE, BASE_TILE)

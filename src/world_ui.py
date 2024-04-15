@@ -6,7 +6,7 @@ if typing.TYPE_CHECKING:
 from .consts import *
 from .ui import ProgressBar
 from .particle import Particle
-from .menu_ui import ShopUI
+from .menu_ui import ShopUI, PauseUI
 from . import ui
 from . import god
 
@@ -18,6 +18,8 @@ class WorldUI:
         self.world_batch = GrowingRectsBatch(UNLIT_SHADER, *SHADER_UNIFORMS)
         
         self.shop = ShopUI()
+        self.pause = PauseUI()
+        self.indicators = []
 
         self.build()
         
@@ -77,6 +79,7 @@ class WorldUI:
         self.update_static()
         
         self.shop.build()
+        self.pause.build()
 
     def update_always(self):
         self.static_rects = []
@@ -98,7 +101,7 @@ class WorldUI:
         
         if not god.world.spawner.wave_active:
             # next wave
-            next_wave = WAVE_COOLDOWN-((pygame.time.get_ticks()-god.world.spawner.wave_end_time)/1000)
+            next_wave = WAVE_COOLDOWN-((camera.get_ticks()-god.world.spawner.wave_end_time)/1000)
             self.top_bar.set_value(next_wave, WAVE_COOLDOWN)
             rects += self.top_bar.fill_rect_objs
             rects += font.render_single_center(MAIN_FONT, 
@@ -118,25 +121,29 @@ class WorldUI:
             rects += font.render_single(MAIN_FONT, f"{camera.clock.get_fps():.1f} FPS ", camera.rect.topright, pos_name="tr")
             
         # damage overlay
-        if pygame.time.get_ticks() - god.world.last_damage < DAMAGE_OVERLAY_DURATION*1000:
-            alpha = 0.5-((pygame.time.get_ticks() - god.world.last_damage)/(DAMAGE_OVERLAY_DURATION*1000))*0.5
+        if camera.get_ticks() - god.world.last_damage < DAMAGE_OVERLAY_DURATION*1000:
+            alpha = 0.5-((camera.get_ticks() - god.world.last_damage)/(DAMAGE_OVERLAY_DURATION*1000))*0.5
             self.damage_overlay[0].color = (1, 1, 1, alpha)
             self.damage_overlay[0].update_buffer_data()
             rects += self.damage_overlay
         
         # wave complete
-        if pygame.time.get_ticks() - god.world.spawner.wave_complete_time < EVENT_UI_DURATION*1000:
+        if camera.get_ticks() - god.world.spawner.wave_complete_time < EVENT_UI_DURATION*1000:
             rects += self.wave_complete_rects
             
         # level up
-        if pygame.time.get_ticks() - god.player.level_up_time < EVENT_UI_DURATION*1000:
+        if camera.get_ticks() - god.player.level_up_time < EVENT_UI_DURATION*1000:
             rects += self.level_up_rects
+        
+        # indicators:
+        for ind in list(self.indicators):
+            rects += ind.update()
 
         self.ui_batch.update_rects(rects)
         
         self.update_world()
-        
         self.shop.update()
+        self.pause.update()
         
     def update_world(self):
         rects = []+god.world.silly_obj
@@ -204,3 +211,5 @@ class WorldUI:
         self.static_top_batch.render()
         if self.shop.is_open:
             self.shop.render()
+        if self.pause.is_open:
+            self.pause.render()

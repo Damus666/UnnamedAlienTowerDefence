@@ -5,11 +5,16 @@ import string
 from .buffer import RectObj
 from .texture import SpriteAtlas
 
-def add_font(name, pg_font: pygame.Font, atlas: SpriteAtlas, tex_id, antialiasing=True, base_scale=1, extra_chars=""):
+def add_font(name, pg_font: pygame.Font, atlas: SpriteAtlas, tex_id, antialiasing=True, base_scale=1, 
+             extra_chars="", hebrew_chars="", hebrew_font: pygame.Font=None, arabic_chars="", arabic_font: pygame.Font=None):
     chars = string.ascii_letters+string.digits+string.punctuation+" "+extra_chars
-    bitmaps[name] = FontBitmap(pg_font, chars, tex_id, atlas, base_scale)
+    bitmaps[name] = FontBitmap(pg_font, chars+hebrew_chars+arabic_chars, tex_id, atlas, base_scale)
     for char in chars:
         atlas.add(pg_font.render(char, antialiasing, "white"), f"{name}_{char}")
+    for char in hebrew_chars:
+        atlas.add(hebrew_font.render(char, antialiasing, "white"), f"{name}_{char}")
+    for char in arabic_chars:
+        atlas.add(arabic_font.render(char, antialiasing, "white"), f"{name}_{char}")
 
 class FontBitmap:
     def __init__(self, pg_font: pygame.Font, chars, tex_id, atlas:SpriteAtlas, base_scale):

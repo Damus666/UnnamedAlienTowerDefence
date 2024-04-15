@@ -11,7 +11,7 @@ class Tree:
         self.tree = tree
         self.grown = False
         self.size_mul = 0.5
-        self.start_time = pygame.time.get_ticks()
+        self.start_time = camera.get_ticks()
         self.rect = pygame.FRect(0, 0, tree.size, tree.size)
         self.rect.center = pos
         self.pos = pygame.Vector2(pos)
@@ -36,7 +36,7 @@ class Tree:
         self.energy += amount
         if self.energy > self.tree.energy:
             self.energy = self.tree.energy
-            god.player.add_xp(self.tree.plant_xp/10)
+            god.player.add_xp(self.tree.place_xp/10)
         
     def get_bar_rect_objs(self):
         if self.energy != self.energy_bar.val:
@@ -44,7 +44,7 @@ class Tree:
         if not self.grown:
             self.progress_bar.set_value(self.size_mul-0.5, 1-0.5)
         else:
-            val = min(self.tree.attack_cooldown,((pygame.time.get_ticks()-self.attacker.last_attack)/1000))
+            val = min(self.tree.attack_cooldown,((camera.get_ticks()-self.attacker.last_attack)/1000))
             if self.progress_bar.val != val:
                 self.progress_bar.set_value(val, self.tree.attack_cooldown)
                 
@@ -57,7 +57,7 @@ class Tree:
     def finish_growing(self):
         self.grown = True
         self.size_mul = 1
-        god.player.add_xp(self.tree.plant_xp)
+        god.player.add_xp(self.tree.place_xp)
         self.update_rect_obj()
         if self.tree.has_light:
             god.world.refresh_tree_lights()
@@ -66,7 +66,7 @@ class Tree:
     
     def update(self):
         if not self.grown:
-            grow_progress = (((pygame.time.get_ticks()-self.start_time))/(self.tree.grow_time*1000))/2
+            grow_progress = (((camera.get_ticks()-self.start_time))/(self.tree.grow_time*1000))/2
             prev = self.size_mul
             self.size_mul = 0.5+grow_progress
             if round(self.size_mul, 1) != round(prev, 1):

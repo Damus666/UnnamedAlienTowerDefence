@@ -50,7 +50,7 @@ class TreeData(Scriptable):
     grow_time: int
     unlock_level: int
     price: int
-    plant_xp = 0
+    place_xp = 0
     energy: float
     energy_price: float
         

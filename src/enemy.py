@@ -44,7 +44,7 @@ class Enemy:
     def damage(self, damage, is_effect=False):
         if damage > 0 and self.buff.can_damage(is_effect):
             self.health -= damage
-            self.last_damage = pygame.time.get_ticks()
+            self.last_damage = camera.get_ticks()
             if self in god.world.enemies_shot:
                 god.world.enemies_shot.remove(self)
             if self.health <= 0:
@@ -90,7 +90,7 @@ class Enemy:
                 else:
                     self.next_rect = god.world.follow_rects[self.follow_pos_idx]
                     self.next_follow_pos = god.world.follow_pos[self.follow_pos_idx]
-        if pygame.time.get_ticks() - self.last_damage > ENEMY_DAMAGE_COOLDOWN*1000:
+        if camera.get_ticks() - self.last_damage > ENEMY_DAMAGE_COOLDOWN*1000:
             self.rect_obj.color = WHITE
         else:
             self.rect_obj.color = ENEMY_DAMAGE_COL

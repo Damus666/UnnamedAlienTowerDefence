@@ -13,7 +13,7 @@ class Particle:
         self.uvs = [god.assets.get_uvs(tex_name+str(i)) for i in range(frames)] if frames > 0 else None
         self.anim = Anim(frames, frame_speed)
         self.duration = duration
-        self.born_time = pygame.time.get_ticks()
+        self.born_time = camera.get_ticks()
         
     def instantiate(self):
         god.world.add_uparticle(self)
@@ -29,7 +29,7 @@ class Particle:
         
     def update(self):
         if self.duration != 0:
-            if pygame.time.get_ticks() - self.born_time >= self.duration*1000:
+            if camera.get_ticks() - self.born_time >= self.duration*1000:
                 self.destroy()
         
     def destroy(self):
@@ -63,20 +63,20 @@ class GrowingParticle(Particle):
         super().__init__(pos, size, tex_name, frames, col, frame_speed)
         self.increase, self.grow_time, self.disappear_time = increase, grow_time, disappear_time
         self.start_w, self.start_h = self.rect.w, self.rect.h
-        self.start_time = pygame.time.get_ticks()
+        self.start_time = camera.get_ticks()
         self.start_disappear = -1
     
     def grow(self):
         if self.rect.w < self.start_w+self.increase:
-            increase = (self.increase*((pygame.time.get_ticks()-self.start_time)/1000))/self.grow_time
+            increase = (self.increase*((camera.get_ticks()-self.start_time)/1000))/self.grow_time
             center = self.rect.center
             self.rect.size = (self.start_w+increase, self.start_h+increase)
             self.rect.center = center
             self.update_rect_obj()
         elif self.start_disappear < 0:
-            self.start_disappear = pygame.time.get_ticks()
+            self.start_disappear = camera.get_ticks()
         if self.start_disappear > 0:
-            alpha = 1-((pygame.time.get_ticks()-self.start_disappear)/1000)/(self.disappear_time)
+            alpha = 1-((camera.get_ticks()-self.start_disappear)/1000)/(self.disappear_time)
             if alpha <= 0:
                 self.destroy()
             self.rect_obj.color = (self.rect_obj.color[0], self.rect_obj.color[1], self.rect_obj.color[2], alpha)
@@ -89,20 +89,20 @@ class GrowingParticleY(Particle):
         super().__init__(pos, size, tex_name, frames, col, frame_speed)
         self.increase, self.grow_time, self.disappear_time = increase, grow_time, disappear_time
         self.start_h = self.rect.h
-        self.start_time = pygame.time.get_ticks()
+        self.start_time = camera.get_ticks()
         self.start_disappear = -1
     
     def grow(self):
         if self.rect.h < self.start_h+self.increase:
-            increase = (self.increase*((pygame.time.get_ticks()-self.start_time)/1000))/self.grow_time
+            increase = (self.increase*((camera.get_ticks()-self.start_time)/1000))/self.grow_time
             center = self.rect.midbottom
             self.rect.h = self.start_h+increase
             self.rect.midbottom = center
             self.update_rect_obj()
         elif self.start_disappear < 0:
-            self.start_disappear = pygame.time.get_ticks()
+            self.start_disappear = camera.get_ticks()
         if self.start_disappear > 0:
-            alpha = 1-((pygame.time.get_ticks()-self.start_disappear)/1000)/(self.disappear_time)
+            alpha = 1-((camera.get_ticks()-self.start_disappear)/1000)/(self.disappear_time)
             if alpha <= 0:
                 self.destroy()
             self.rect_obj.color = (self.rect_obj.color[0], self.rect_obj.color[1], self.rect_obj.color[2], alpha)

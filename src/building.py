@@ -105,8 +105,8 @@ class BotBuilding(Building):
                 else:
                     self.rect_obj.uv = self.right_uvs
                 self.update_rect_obj()
-                if pygame.time.get_ticks() - self.last_particle >= 0.4*1000:
-                    self.last_particle = pygame.time.get_ticks()
+                if camera.get_ticks() - self.last_particle >= 0.4*1000:
+                    self.last_particle = camera.get_ticks()
                     size = (random.uniform(0.11, 0.31))
                     Particle(self.pos, (size, size), "bubble", duration=1).instantiate()
             else:
@@ -124,7 +124,7 @@ class MinerBuilding(Building):
         self.ore = TILES_ORES[self.ore_tile.tile_name]
         self.amount = 0
         self.mine_cooldown, self.stack_size, *_ = ORES_DATA[self.ore]
-        self.last_mine = pygame.time.get_ticks()
+        self.last_mine = camera.get_ticks()
         self.working = 1
         self.on_uvs, self.off_uvs = (god.assets.get_uvs(self.building.tex_name),
                                      god.assets.get_uvs(MINER_OFF))
@@ -139,7 +139,7 @@ class MinerBuilding(Building):
         pygame.Vector2().as_polar()
         
     def get_ui_rect_objs(self):
-        self.progress_bar.set_value(min(self.mine_cooldown, (pygame.time.get_ticks()-self.last_mine)/1000))
+        self.progress_bar.set_value(min(self.mine_cooldown, (camera.get_ticks()-self.last_mine)/1000))
         return (self.progress_bar.get_rect_objs()
                 +self.bgcircle_img_rects
                 +self.ore_img_rects
@@ -156,8 +156,8 @@ class MinerBuilding(Building):
                 self.rect_obj.uv = self.on_uvs
                 self.light.active = True
                 god.world.update_buildings_batch()
-            if pygame.time.get_ticks() - self.last_mine > self.mine_cooldown*1000:
-                self.last_mine = pygame.time.get_ticks()
+            if camera.get_ticks() - self.last_mine > self.mine_cooldown*1000:
+                self.last_mine = camera.get_ticks()
                 self.amount += 1
                 self.refresh_amount()
         else:

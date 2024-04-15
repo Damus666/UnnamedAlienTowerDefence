@@ -1,7 +1,8 @@
 import pygame
+pygame.init()
 
 # window
-WIDTH, HEIGHT = 1920, 1080
+WIDTH, HEIGHT = pygame.display.get_desktop_sizes()[0]
 #WIDTH, HEIGHT = 1200, 800
 TITLE = "Evergreen Defense"
 FPS = 0
@@ -47,7 +48,6 @@ OUTLINE_SIZES = {
     "t": 1,
     "s": 2,
     #"o": 3,
-    #"m": 4,
     "b": 6,
     "v": 8,
     "u": 10,
@@ -56,6 +56,13 @@ OUTLINE_SIZES = {
 }
 CIRCLE_RADIUS = 100
 FONT_SCALE = (0.02/6)*(0.6/1.5)
+FPS_OPTIONS = [30, 60, 90, 120, 244, 360, 666, 0]
+
+MOUSE_CONVERSION = {
+    pygame.BUTTON_LEFT: "left_button",
+    pygame.BUTTON_RIGHT: "right_button",
+    pygame.BUTTON_MIDDLE: "middle_button"
+}
 
 PRB_H, PRB_C = 0.8, 0.4
 WORLD_BAR_XMUL, WORLD_BAR_H, WORLD_BAR_C = 1.2, 0.15, 0.04
@@ -63,10 +70,14 @@ TL_BAR_W, TL_BAR_O = 3.5, 3.5*2
 LEVEL_CIRCLE_TL, LEVEL_CIRCLE_SIZE = (S, PRB_H/2+S), (1, 1)
 MONEY_ICON_W = 0.72
 
+TITLE_SIZE = 3.2
 DAMAGE_OVERLAY = "damageoverlay"
 SHOP_CARD_W, SHOP_CARD_C = 3, 0.5
-CARD_S = 0.15
-
+CARD_S, UI_S = 0.15, 0.14
+BBTN_SIZE, BTN_C = (4, 1.2), 0.16
+MBTN_SIZE = (3, 1)
+SBTN_SIZE = (1.5, 0.8)
+BTN_TEXT, LABEL_SIZE = 1.2, 1.3
 
 # colors
 DUST1_START = pygame.Color(255,150,0,255)
@@ -97,6 +108,7 @@ MONEY_COL = (1, 0.8, 0, 1)
 LOCKED_IMG_COL = (1, 1, 1, 0.4)
 UNHOVER_OUTLINE, HOVER_OUTLINE = (0.6, 0.6, 0.6, 0.6), (1, 1, 1, 1)
 CARD_BG = (0, 0, 0, 0.6)
+BTN_BG = (0, 0, 0, 0.6)
 
 STAR_COLORS = {
     "blue": (0, 0.3, 1, 0.7),

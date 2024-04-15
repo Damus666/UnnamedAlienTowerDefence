@@ -24,11 +24,11 @@ class TreeAttack:
             return False
         if self.tree.energy < self.tree.tree.energy_price:
             return False
-        if pygame.time.get_ticks() - self.last_attack > self.tree_data.attack_cooldown*1000:
+        if camera.get_ticks() - self.last_attack > self.tree_data.attack_cooldown*1000:
             enemy = self.choose_enemy(self.available_enemies())
             if enemy:
                 self.enemy = enemy
-                self.last_attack = pygame.time.get_ticks()
+                self.last_attack = camera.get_ticks()
                 self.start_attack()
                 
     def update(self):
@@ -146,7 +146,7 @@ class AttackBurst(TreeAttack):
         self.burst = self.tree_data.burst
         self.attacking = False
         self.spawn_amount = 0
-        self.last_spawn = pygame.time.get_ticks()
+        self.last_spawn = camera.get_ticks()
         
     def start_attack(self):
         self.attacking = True
@@ -157,7 +157,7 @@ class AttackBurst(TreeAttack):
         self.spawn_amount += 1
         if self.spawn_amount >= self.burst["amount"]:
             self.attacking = False
-        self.last_spawn = pygame.time.get_ticks()
+        self.last_spawn = camera.get_ticks()
         esize, eoffset = self.get_size_offset()
         self.tree.consume_energy()
         self.shoot(self.tree.pos+eoffset, (self.proj["size"][0]+esize, self.proj["size"][1]+esize), self.get_dir(self.predict_enemy_pos()), self.proj, target=self.enemy)
@@ -165,7 +165,7 @@ class AttackBurst(TreeAttack):
     def update(self):
         self.base_update()
         if self.attacking:
-            if pygame.time.get_ticks() - self.last_spawn >= self.burst["cooldown"]*1000:
+            if camera.get_ticks() - self.last_spawn >= self.burst["cooldown"]*1000:
                 self.attack()
                 
 class AttackSpawn(TreeAttack):
@@ -190,7 +190,7 @@ class AttackBeam(TreeAttack):
         
     def start_attack(self):
         self.can_attack = False
-        self.last_tick = pygame.time.get_ticks()
+        self.last_tick = camera.get_ticks()
         self.ticks = 0
         self.particle = Particle((0, 0), (self.beam["size"], 1), self.beam.get("tex_name", "square"), 0, self.beam.get("color", WHITE), 0)
         god.world.add_uparticle(self.particle)
@@ -208,8 +208,8 @@ class AttackBeam(TreeAttack):
                 self.particle.destroy()
                 return
             
-            if pygame.time.get_ticks() - self.last_tick >= TICK*1000:
-                self.last_tick = pygame.time.get_ticks()
+            if camera.get_ticks() - self.last_tick >= TICK*1000:
+                self.last_tick = camera.get_ticks()
                 self.ticks += 1
                 if self.ticks >= self.beam["ticks"]:
                     self.can_attack = True
