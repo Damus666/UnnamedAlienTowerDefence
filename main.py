@@ -1,23 +1,27 @@
-
 from src.engine.prelude import *
+# hidden import for PyInstaller
+import glcontext
 
 from src.world import World
 from src.assets import Assets
-from src.settings import Settings, LanguageManager
+from src.sounds import Sounds
+from src.settings import Settings, Languages
 from src.consts import *
 from src import god
 
 class App(SceneManager):
     def __init__(self):
         god.app = self
+        Sounds.pre_init()
         Settings.get_user_path()
         camera.init_window(WIDTH, HEIGHT, TITLE, PROJ_SIZE, 0)
         ctx.load_shaders("assets/shaders", LIT_SHADER, UNLIT_SHADER, UI_SHADER, REPLACE_SHADER)
         scriptable.load("assets/scriptables")
         
         god.assets = Assets()
-        god.lang = LanguageManager()
-        god.settings = Settings()   
+        god.lang = Languages()
+        god.settings = Settings()  
+        god.sounds = Sounds() 
         self.screen_buffer = Screenbuffer()
         
         self.screen_buffer.refresh_buffer(WIDTH, HEIGHT, god.settings.scaled_mul)

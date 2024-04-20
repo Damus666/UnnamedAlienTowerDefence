@@ -22,12 +22,16 @@ class Building:
             self.light = Light(self.rect.center, *self.building.light_data)
             (god.world.add_static_light if not self.building.is_bot else god.world.add_dynamic_light)(self.light)
 
+        god.sounds.play_random("building_place")
+        
     def update(self):
         ...
         
     def update_rect_obj(self):
         if self.rect.colliderect(camera.world_rect):
             self.rect_obj.update_positions(self.rect.center, None, self.rect.size)
+        if not self.building.is_bot:
+            god.world.refresh_building_like()
         if self.building.has_light:
             self.light.rect.center = self.rect.center
         

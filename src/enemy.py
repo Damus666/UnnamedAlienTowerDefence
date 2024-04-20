@@ -26,6 +26,7 @@ class Enemy:
         self.speed_mul = 1
         self.effects: dict[str, AttackEffect] = {}
         self.angle = 0
+        self.last_rect = self.rect.copy()
         if self.enemy.has_buff:
             self.buff: EnemyBuff = ENEMY_BUFFS[self.enemy.buff](self)
         else:
@@ -45,6 +46,7 @@ class Enemy:
         if damage > 0 and self.buff.can_damage(is_effect):
             self.health -= damage
             self.last_damage = camera.get_ticks()
+            god.sounds.play_random("hit")
             if self in god.world.enemies_shot:
                 god.world.enemies_shot.remove(self)
             if self.health <= 0:
@@ -59,8 +61,15 @@ class Enemy:
             self.health = self.enemy.health
 
     def update_pos(self):
-        if self.rect.colliderect(camera.world_rect):
+        rc = False
+        rectcollide = self.rect.colliderect(camera.world_rect)
+        if rectcollide or (self.last_rect is not None and (rc:=self.last_rect.colliderect(camera.world_rect))):
+            if rc:
+                self.last_rect = None
             self.rect_obj.update_positions(self.rect.center, None, (self.enemy.size, self.enemy.size), self.angle)
+        if not rectcollide:
+            if self.last_rect is None:
+                self.last_rect = self.rect.copy()
         if self.enemy.has_light:
             self.light.rect.center = self.rect.center
         

@@ -20,7 +20,7 @@ class Particle:
         return self
         
     def update_rect_obj(self):
-        if self.rect.colliderect(camera.world_rect):
+        if self.rect.colliderect(camera.world_rect) or camera.get_ticks()-god.world.forced_refresh > 990:
             self.rect_obj.update_positions(self.rect.center, None, self.rect.size, self.angle)
         
     def animate(self):

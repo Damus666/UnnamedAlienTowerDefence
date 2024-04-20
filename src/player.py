@@ -30,6 +30,7 @@ class Player:
                 
         self.rect = pygame.FRect(0,0, OBJ_SIZE, OBJ_SIZE)
         self.hitbox = pygame.FRect(0,0,OBJ_SIZE/1.4, OBJ_SIZE/4)
+        self.dir = pygame.Vector2()
         
         self.anims = {
             "idledown": Anim(2, PLAYER_IDLE_SPEED),
@@ -81,6 +82,7 @@ class Player:
             self.level += 1
             self.next_level_xp *= NEXT_LEVEL_XP_MUL
             self.level_up_time = camera.get_ticks()
+            god.sounds.play("level_up")
             self.celebrate()
             god.world.ui.build()
         god.world.ui.update_static()
@@ -144,6 +146,9 @@ class Player:
             god.world.ui.toggle_tree_range(), god.world.ui.toggle_tree_range()
     
     def update(self):
+        if god.world.ui.pause.is_open:
+            return
+        
         dir = pygame.Vector2()
         
         if god.settings.binds["left"].check_frame():
@@ -158,7 +163,7 @@ class Player:
         if god.settings.binds["down"].check_frame():
             dir.y += 1
             self.y_status = "down"
-            
+        
         if dir.length() != 0:
             dir.normalize_ip()
             self.pos.x += dir.x*self.speed*camera.dt
@@ -213,6 +218,8 @@ class Player:
                 self.unlit_rect_objs[P_RANGEPREV_I] = RectObj(tile_center, None, (ENERGY_DISTANCE*2, ENERGY_DISTANCE*2),
                                                 PREVIW_ENERGY_COL, WORLD_ATLAS, god.assets.get_uvs("circle_o"))
             self.unlit_batch.update_rects(self.unlit_rect_objs)
+            
+        self.dir = dir
             
     def update_buffer(self):
         self.rect_obj.update_positions(self.pos, None)

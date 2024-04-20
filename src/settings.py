@@ -46,7 +46,7 @@ class Keybind:
                 return True
         return False
     
-class LanguageManager:
+class Languages:
     def __init__(self):
         self.langs = {}
         for file in os.listdir(f"assets/languages"):
@@ -74,18 +74,18 @@ class Settings:
         self.ui_high_res = True
         self.max_lights = MAX_LIGHTS 
         self.lang = PREF_LANGUAGE if PREF_LANGUAGE in god.lang.langs.keys() else DEFAULT_LANGUAGE
-        self.music_vol = 1 # not implemented
-        self.fx_vol = 1 # not implemented
+        self.music_vol = 1
+        self.fx_vol = 1
         self.binds: dict[str, Keybind] = {
             "left": Keybind(KC(pygame.K_a), KC(pygame.K_LEFT)),
             "right": Keybind(KC(pygame.K_d), KC(pygame.K_RIGHT)),
             "up": Keybind(KC(pygame.K_w), KC(pygame.K_UP)),
             "down": Keybind(KC(pygame.K_s), KC(pygame.K_DOWN)),
-            "tree_range": Keybind(KC(pygame.K_t)),
             "shop": Keybind(KC(pygame.K_TAB)),
-            "pause": Keybind(KC(pygame.K_ESCAPE)), # not implemented
-            "place": Keybind(KC(pygame.BUTTON_LEFT, "mouse")),
+            "pause": Keybind(KC(pygame.K_ESCAPE)),
+            "tree_range": Keybind(KC(pygame.K_t)),
             "cancel_action": Keybind(KC(pygame.K_ESCAPE)),
+            "place": Keybind(KC(pygame.BUTTON_LEFT, "mouse")),
             "ui_click": Keybind(KC(pygame.BUTTON_LEFT, "mouse"))
         }
         self.save("default_settings")

@@ -62,7 +62,7 @@ def load(folder: str):
             if extension == "json":
                 with open(dirpath+"/"+file, "r") as file_buffer:
                     json_data = json.load(file_buffer)
-                    scriptable = types_types[json_data["type"]]()
+                    scriptable: Scriptable = types_types[json_data["type"]]()
                     scriptable.type = json_data["type"]
                     scriptable.name = file_name
                     scriptable.id = types_counter[json_data["type"]]

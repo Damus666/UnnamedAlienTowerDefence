@@ -133,10 +133,10 @@ class BuildingData(Scriptable):
             self.need_energy = True
             
 class MapWaveStage(TypedDict):
-    wait_time: float
-    enemy_name: str
-    enemy_amount: int
-    spawn_cooldown: float
+    wait: float
+    enemy: str
+    amount: int
+    cooldown: float
     xp: float
                 
 class MapData(Scriptable):

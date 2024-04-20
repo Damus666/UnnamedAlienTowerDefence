@@ -26,6 +26,7 @@ class Tree:
                                         center=(self.rect.centerx, self.rect.bottom+WORLD_BAR_H))
         self.energy_bar = ProgressBar((self.rect.w*WORLD_BAR_XMUL, WORLD_BAR_H), WORLD_BAR_C, self.tree.energy, None, ENERGY_BAR_FILL, ENERGY_BAR_BG, DARK_OUTLINE, outline="m",
                                       center=(self.rect.centerx, self.rect.bottom+WORLD_BAR_H*2.5))
+        god.sounds.play("tree_place")
         
     def consume_energy(self):
         self.energy -= self.tree.energy_price
@@ -52,13 +53,14 @@ class Tree:
         
     def update_rect_obj(self):
         self.rect_obj.update_positions(self.rect.center, None, (self.tree.size*self.size_mul, self.tree.size*self.size_mul))
-        god.world.update_buildings_batch()
+        god.world.refresh_building_like()
         
     def finish_growing(self):
         self.grown = True
         self.size_mul = 1
-        god.player.add_xp(self.tree.place_xp)
+        god.player.add_xp(self.tree.place_xp/2)
         self.update_rect_obj()
+        god.sounds.play("upgrade")
         if self.tree.has_light:
             god.world.refresh_tree_lights()
             #self.light = Light(self.rect.center, *self.tree.light_data)

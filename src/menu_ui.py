@@ -87,9 +87,9 @@ class SettingsUI:
         vol = round(god.settings.music_vol, 1)
         text = f"{god.lang["off"]}" if vol == 0 else f"{god.lang["max"]}" if vol == 1 else vol
         general += font.render_single_center(MAIN_FONT, f"{text}", (right_cx, cy), LABEL_SIZE)
-        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1, cy), None, "music_minus", "general", self, self.music_click, -1)
+        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1.2, cy), None, "music_minus", "general", self, self.music_click, -1)
         general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"-", BTN_TEXT, center=r.rect.center)
-        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1, cy), None, "music_plus", "general", self, self.music_click, 1)
+        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1.2, cy), None, "music_plus", "general", self, self.music_click, 1)
         general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"+", BTN_TEXT, center=r.rect.center)
         
         cy += BBTN_SIZE[1]+UI_S
@@ -98,9 +98,9 @@ class SettingsUI:
         vol = round(god.settings.fx_vol, 1)
         text = f"{god.lang["off"]}" if vol == 0 else f"{god.lang["max"]}" if vol == 1 else vol
         general += font.render_single_center(MAIN_FONT, f"{text}", (right_cx, cy), LABEL_SIZE)
-        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1, cy), None, "fx_minus", "general", self, self.fx_click, -1)
+        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1.2, cy), None, "fx_minus", "general", self, self.fx_click, -1)
         general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"-", BTN_TEXT, center=r.rect.center)
-        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1, cy), None, "fx_plus", "general", self, self.fx_click, 1)
+        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1.2, cy), None, "fx_plus", "general", self, self.fx_click, 1)
         general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"+", BTN_TEXT, center=r.rect.center)
         
         cy += BBTN_SIZE[1]*5+UI_S
@@ -189,7 +189,7 @@ class SettingsUI:
                 else:
                     text = f"{god.lang["button"]} {bind.bind.code}"
             else:
-                kstr = pygame.key.name(bind.bind.code)
+                kstr = pygame.key.name(bind.bind.code).upper()
                 if kstr.strip() == "":
                     kstr = f"{bind.bind.code}"
                 text = f"{god.lang["key"]} {kstr}"
@@ -206,7 +206,7 @@ class SettingsUI:
                     else:
                         text = f"{god.lang["button"]} {bind.alts[0].code}"
                 else:
-                    kstr = pygame.key.name(bind.alts[0].code)
+                    kstr = pygame.key.name(bind.alts[0].code).upper()
                     if kstr.strip() == "":
                         kstr = f"{bind.alts[0].code}"
                     text = f"{god.lang["key"]} {kstr}"
@@ -234,8 +234,10 @@ class SettingsUI:
                 if rect.rect.collidepoint(camera.ui_mouse):
                     if not self.clicked and god.settings.binds["ui_click"].check_frame():
                         rect.click()
+                        god.sounds.play("click")
                     if not rect.hovered:
                         rect.hovered = True
+                        god.sounds.play("hover", False)
                         self.build()
                 else:
                     if rect.hovered:
@@ -259,6 +261,7 @@ class SettingsUI:
                 self.listening = False
                 self.listen_bind = None
                 self.build()
+                god.sounds.play("click")
                 return
             if kc == None:
                 kc = KC(0, "key")
@@ -271,6 +274,7 @@ class SettingsUI:
             self.listening = False
             self.listen_bind = None
             self.build()
+            god.sounds.play("click")
             
         if event.type == pygame.MOUSEBUTTONDOWN:
             if kc == None:
@@ -284,6 +288,7 @@ class SettingsUI:
             self.listening = False
             self.listen_bind = None
             self.build()
+            god.sounds.play("click")
                         
     def back_click(self):
         self.is_open = False
@@ -301,11 +306,13 @@ class SettingsUI:
         god.settings.music_vol += 0.1*dir
         god.settings.music_vol = pygame.math.clamp(god.settings.music_vol, 0, 1)
         self.build()
+        god.sounds.update_volumes()
         
     def fx_click(self, dir):
         god.settings.fx_vol += 0.1*dir
         god.settings.fx_vol = pygame.math.clamp(god.settings.fx_vol, 0, 1)
         self.build()
+        god.sounds.update_volumes()
         
     def lights_click(self, dir):
         god.settings.max_lights += 1*dir
@@ -377,10 +384,12 @@ class ShopUI:
                 if name not in self.hovered_trees:
                     if can:
                         self.hovered_trees.append(name)
+                        god.sounds.play("hover", False)
                         self.build()
                 if can and god.settings.binds["ui_click"].check_frame():
                     self.close()
                     god.player.start_planting(TreeData.get(name))
+                    god.sounds.play("click")
             else:
                 if name in self.hovered_trees:
                     self.hovered_trees.remove(name)
@@ -392,10 +401,12 @@ class ShopUI:
                 if name not in self.hovered_buildings:
                     if can:
                         self.hovered_buildings.append(name)
+                        god.sounds.play("hover", False)
                         self.build()
                 if can and god.settings.binds["ui_click"].check_frame():
                     self.close()
                     god.player.start_building(BuildingData.get(name))
+                    god.sounds.play("click")
             else:
                 if name in self.hovered_buildings:
                     self.hovered_buildings.remove(name)
@@ -503,9 +514,11 @@ class PauseUI:
             if rect.collidepoint(camera.ui_mouse):
                 if not btn in self.hovered_btns:
                     self.hovered_btns.append(btn)
+                    god.sounds.play("hover", False)
                     self.build()
                 if god.settings.binds["ui_click"].check_frame():
                     getattr(self, f"{btn}_click")()
+                    god.sounds.play("click")
             else:
                 if btn in self.hovered_btns:
                     self.hovered_btns.remove(btn)
@@ -531,10 +544,13 @@ class PauseUI:
         
     def open(self):
         self.is_open = True
+        #god.sounds.play("pause")
+        god.sounds.music_pause()
         camera.pause()
         
     def close(self):
         self.is_open = False
+        god.sounds.music_resume()
         camera.unpause()
         
     def toggle(self):
@@ -546,6 +562,7 @@ class PauseUI:
 
 class Indicator:
     def __init__(self, type, amount):
+        amount = int(amount)
         self.pos = pygame.Vector2(random.uniform(-camera.rect.w/4, camera.rect.w/4), random.uniform(-camera.rect.h/4, camera.rect.h/4))
         self.scale = random.uniform(1.4, 1.5)
         self.text = f"+{amount}{god.lang["currency"]}" if type == "money" else f"+{amount} {god.lang["xp"]}"
@@ -554,6 +571,8 @@ class Indicator:
         self.duration = random.uniform(1.8, 2.2)
         self.born = camera.get_ticks()
         god.world.ui.indicators.append(self)
+        if type == "money":
+            god.sounds.play("money")
         
     def update(self):
         if camera.get_ticks() - self.born > self.duration*1000:

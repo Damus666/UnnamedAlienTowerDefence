@@ -30,6 +30,7 @@ class TreeAttack:
                 self.enemy = enemy
                 self.last_attack = camera.get_ticks()
                 self.start_attack()
+                god.sounds.play_random("attack")
                 
     def update(self):
         self.base_update()

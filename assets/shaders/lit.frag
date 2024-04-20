@@ -10,7 +10,7 @@ out vec4 oCol;
 
 uniform float numLights;
 uniform sampler2D textures[3];
-uniform float lightData[120*7];
+uniform float lightData[100*7];
 
 const vec4 BASE_LIGHT = vec4(0.15, 0.15, 0.15, 1);
 

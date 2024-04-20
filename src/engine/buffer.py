@@ -99,10 +99,7 @@ class RectObj:
             *pos2, *color, *uv2, tex_id,
             *pos3, *color, *uv3, tex_id,
         ]
-        
-    def add_vertices(self, buffer_data: list):
-        buffer_data.extend(self.buffer_data)
-        
+                
     @staticmethod
     def null():
         return RectObj((0,0), None, (0,0), (0, 0, 0, 0), 0, None)
@@ -135,7 +132,7 @@ class FixedRectsBatch:
     def get_buffer_data(self):
         buffer_data = []
         for rect in self.rect_objs:
-            rect.add_vertices(buffer_data)
+            buffer_data.extend(rect.buffer_data)
         empty_vertices(buffer_data, self.rects_amount-len(self.rect_objs))
         return numpy.fromiter(buffer_data, dtype=numpy.float32)
         
@@ -179,7 +176,7 @@ class GrowingRectsBatch:
             self.vao = ctx.ctx.vertex_array(ctx.get_shader(self.shader_name), [(self.vbo, *self.shader_uniforms)], index_buffer=self.ibo)
         buffer_data = []
         for rect in self.rect_objs:
-            rect.add_vertices(buffer_data)
+            buffer_data.extend(rect.buffer_data)
         empty_vertices(buffer_data, self.reserved_amount-len(self.rect_objs))
         self.vbo.write(numpy.fromiter(buffer_data, dtype=numpy.float32))
         

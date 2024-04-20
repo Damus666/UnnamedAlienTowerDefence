@@ -41,9 +41,12 @@ class World(Scene):
         self.buildings: list[Building] = []
         self.energy_buildings: list[Building] = []
         self.miner_buildings: list[MinerBuilding] = []
-        self.buildings_rect_objs = []
+        self.all_building_like: list[Tree|Building] = []
+        #self.buildings_rect_objs = []
         self.tree_lights: list[Light] = []
-        self.buildings_batch = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
+        #self.buildings_batch = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
+        self.buildings_batch_top = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
+        self.buildings_batch_bottom = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         
         self.enemies: list[Enemy] = []
         self.bots: list[BotBuilding] = []
@@ -69,6 +72,8 @@ class World(Scene):
         
         self.portal_angle = 0
         self.last_damage = -9999
+        self.forced_refresh = camera.get_ticks()
+        god.sounds.music_play("world_music")
 
     def boss_spawned(self):
         self.random_unlit_batch.rect_objs.remove(self.builder.portal_tile.rect_obj)
@@ -84,6 +89,7 @@ class World(Scene):
     def damage(self, damage):
         self.health -= damage
         self.last_damage = camera.get_ticks()
+        god.sounds.play("explosion")
         if self.health <= 0:
             print("Game over lmao")
             self.manager.quit()
@@ -151,27 +157,31 @@ class World(Scene):
         self.update_bots_batch()
         
     def add_building_like(self, building):
-        self.can_be_above.append(building)
+        #self.can_be_above.append(building)
+        self.all_building_like.append(building)
         self.refresh_building_like()
         
     def remove_building_like(self, building):
-        self.can_be_above.remove(building)
+        #self.can_be_above.remove(building)
+        self.all_building_like.remove(building)
         self.refresh_building_like()
         
     def refresh_building_like(self):
         self.sort()
-        self.buildings_rect_objs = [tree.rect_obj for tree in self.trees+self.buildings]
-        self.update_buildings_batch()
+        self.update_split()
+        #self.buildings_rect_objs = [obj.rect_obj for obj in self.all_building_like]
+        #self.update_buildings_batch()
     
     def update_bots_batch(self):
         self.bots_batch.update_rects(self.bots_rect_objs)
         
-    def update_buildings_batch(self):
-        self.buildings_batch.update_rects(self.buildings_rect_objs)
-        self.buildings_batch.free_rect_objs()
+    #def update_buildings_batch(self):
+    #    return
+        #self.buildings_batch.update_rects(self.buildings_rect_objs)
+        #self.buildings_batch.free_rect_objs()
         
     def sort(self):
-        self.trees.sort(key=lambda tree: tree.rect.centery)
+        self.all_building_like.sort(key=lambda obj: obj.rect.centery)
         self.enemies.sort(key=lambda enemy: enemy.rect.center)
         self.can_be_above.sort(key=lambda obj: obj.rect.centery)
         
@@ -219,7 +229,7 @@ class World(Scene):
         self.player.update()
         self.spawner.update()
         self.ui.update()
-        
+            
         for tree in self.trees:
             tree.update()
         for enemy in self.enemies:
@@ -233,9 +243,15 @@ class World(Scene):
         for bs in self.bubble_spawners:
             bs.update()
             
+        if camera.get_ticks() - self.forced_refresh > 1000:
+            self.forced_refresh = camera.get_ticks()
+            
         if len(self.enemies)+len(self.bots) > 0:
             self.update_bots_batch()
         self.uparticles_batch.update_rects(self.uparticles_rect_objs)
+        
+        if self.player.dir.length() != 0:
+            self.update_split()
         
         self.random_unlit_batch.update_rects()
         self.above_batch.update_rects(self.get_above_player(self.can_be_above))
@@ -243,6 +259,11 @@ class World(Scene):
         self.dynamic_light_batch.update_buffer()
 
         self.dynamic_light_batch.filter(), self.static_light_batch.filter()
+        
+    def update_split(self):
+        below_b, above_b = self.split_above_player(self.all_building_like)
+        self.buildings_batch_bottom.update_rects(below_b+self.silly_obj)
+        self.buildings_batch_top.update_rects(above_b+self.silly_obj)
         
     def light_filter(self, light: Light):
         return light.rect.colliderect(camera.world_rect)
@@ -252,10 +273,12 @@ class World(Scene):
                                   LIT_SHADER, god.settings.max_lights)
         
         self.builder.render()
-        self.buildings_batch.render()
+        #self.buildings_batch.render()
+        self.buildings_batch_bottom.render()
         self.random_unlit_batch.render()
         self.bots_batch.render()
         self.player.render()
+        self.buildings_batch_top.render()
         self.uparticles_batch.render()
         self.above_batch.render()
         self.above_unlit_batch.render()
@@ -274,6 +297,15 @@ class World(Scene):
                 if tile.rect.bottom > self.player.hitbox.bottom and tile.rect.colliderect(self.player.rect):
                     above_rect_objs.append(tile.rect_obj)
         return sorted(above_rect_objs, key=lambda r: r.pos[1])
+    
+    def split_above_player(self, list_from: list[Tree|Building]):
+        below, above = [], []
+        for tile in list_from:
+            if tile.rect.bottom > self.player.hitbox.bottom:
+                above.append(tile.rect_obj)
+            else:
+                below.append(tile.rect_obj)
+        return below, above
     
     def event(self, event: pygame.Event):
         self.ui.pause.settings.event(event)

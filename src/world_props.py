@@ -35,8 +35,14 @@ class BubbleSpawner:
     def __init__(self, pos):
         self.pos = (pos[0], pos[1]-0.11)
         self.last_bubble = camera.get_ticks()
+        self.rect = pygame.FRect(0, 0, 2, 2)
+        self.rect.center = pos
+        self.last_sound = random.randint(-10000, 10000)
         
     def update(self):
+        if camera.world_rect.colliderect(self.rect) and camera.get_ticks() - self.last_sound >= 10*1000:
+            self.last_sound = camera.get_ticks()
+            god.sounds.play("bubbles")
         if camera.get_ticks()-self.last_bubble > 0.15*1000:
             self.last_bubble = camera.get_ticks()
             dir = (random.uniform(-0.19, 0.19), -1)
@@ -74,20 +80,20 @@ class EnemyWaveSpawner:
         else:
             if not self.stages_completed:
                 if self.stage_active:
-                    if self.stage_spanwed_enemies < self.current_stage["enemy_amount"]:
-                        if camera.get_ticks() - self.last_enemy > self.current_stage["spawn_cooldown"]*1000:
+                    if self.stage_spanwed_enemies < self.current_stage["amount"]:
+                        if camera.get_ticks() - self.last_enemy > self.current_stage["cooldown"]*1000:
                             self.spawn_enemy()
                     else:
                         self.end_stage()
                 else:
-                    if camera.get_ticks() - self.stage_end_time > self.current_stage["wait_time"]*1000:
+                    if camera.get_ticks() - self.stage_end_time > self.current_stage["wait"]*1000:
                         self.start_stage()
             if self.spawned_emenies > 0 and self.killed_enemies == self.spawned_emenies:
                 self.end_wave()
                 
     def spawn_enemy(self):
         self.last_enemy = camera.get_ticks()
-        enemy = Enemy(EnemyData.get(self.current_stage["enemy_name"]), god.world.builder.portal_tile.rect.center)
+        enemy = Enemy(EnemyData.get(self.current_stage["enemy"]), god.world.builder.portal_tile.rect.center)
         god.world.add_enemy(enemy)
         self.spawned_emenies += 1
         self.stage_spanwed_enemies += 1
@@ -114,8 +120,9 @@ class EnemyWaveSpawner:
     def start_wave(self):
         self.wave_active = True
         self.stage_active = True
-        self.wave_enemies_amount = sum([stage["enemy_amount"] for stage in god.world.map.waves[self.wave_idx]])
+        self.wave_enemies_amount = sum([stage["amount"] for stage in god.world.map.waves[self.wave_idx]])
         god.world.ui.update_static()
+        god.sounds.play("next_wave")
         
     def end_wave(self):
         self.wave_idx += 1
@@ -124,6 +131,7 @@ class EnemyWaveSpawner:
             self.wave_idx -= 1
             god.player.celebrate()
             self.wave_complete_time = camera.get_ticks()
+            god.sounds.play("win")
             return
         god.player.add_xp(WAVE_XP*god.player.level)
         self.wave_stages = god.world.map.waves[self.wave_idx]
@@ -136,6 +144,7 @@ class EnemyWaveSpawner:
         self.spawned_emenies = 0
         self.killed_enemies = 0
         god.world.ui.update_static()
+        god.sounds.play("win")
         
 class WorldBuilder:
     def __init__(self):

@@ -88,6 +88,8 @@ class Spritesheet:
         self.texture = Texture.from_surface(self.sheet_surf, self.name)
         
 class SpriteAtlas:
+    DEBUG = False
+    
     def __init__(self, mul=3):
         self.surfaces: dict[str, pygame.Surface] = {}
         self.uvs: dict[str] = {}
@@ -128,5 +130,6 @@ class SpriteAtlas:
             if a >= 255 and b >= 255 and c >= 255 and d >= 255:
                 main_surf.blit(pygame.transform.scale(surf, (w+2, h+2)), (x-1, y-1))
             main_surf.blit(surf, (x, y))
-        pygame.image.save(main_surf, f"stuff/{name}.png")
+        if SpriteAtlas.DEBUG:
+            pygame.image.save(main_surf, f"stuff/{name}.png")
         self.texture = Texture.from_surface(main_surf, name)
