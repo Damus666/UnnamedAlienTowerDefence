@@ -33,6 +33,7 @@ class Enemy:
             self.buff = EnemyBuff(self)
         if self.enemy.name == "boss_bot":
             god.world.boss_spawned()
+            god.sounds.play("roar")
         
     def add_effect(self, name, ticks, *args):
         if self.health <= 0:

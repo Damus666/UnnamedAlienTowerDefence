@@ -4,5 +4,5 @@ PyInstaller.__main__.run([
     'main.py',
     #'--onefile',
     '--windowed',
-    '-name EvergreenDefense'
+    #'-name EvergreenDefense'
 ])

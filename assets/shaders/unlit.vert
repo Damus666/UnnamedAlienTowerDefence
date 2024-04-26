@@ -13,6 +13,7 @@ out vec2 fUV;
 flat out float fTexID;
 
 void main() {
+    //gl_Position = proj * view * vec4(vPos, 0.0, 1.0);
     gl_Position = proj * view * vec4(vPos, 0.0, 1.0);
     fCol = vCol;
     fUV = vUV;

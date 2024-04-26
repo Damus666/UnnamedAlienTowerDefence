@@ -15,8 +15,7 @@ class Tree:
         self.rect = pygame.FRect(0, 0, tree.size, tree.size)
         self.rect.center = pos
         self.pos = pygame.Vector2(pos)
-        #/2 temp
-        self.energy = self.tree.energy/2
+        self.energy = self.tree.energy
         self.rect_obj = RectObj(pos, None, (tree.size*self.size_mul, tree.size*self.size_mul), None, 
                                 WORLD_ATLAS, god.assets.get_uvs(self.tree.tex_name))
         
@@ -37,7 +36,7 @@ class Tree:
         self.energy += amount
         if self.energy > self.tree.energy:
             self.energy = self.tree.energy
-            god.player.add_xp(self.tree.place_xp/10)
+            god.player.add_xp(self.tree.place_xp/20)
         
     def get_bar_rect_objs(self):
         if self.energy != self.energy_bar.val:
@@ -58,7 +57,7 @@ class Tree:
     def finish_growing(self):
         self.grown = True
         self.size_mul = 1
-        god.player.add_xp(self.tree.place_xp/2)
+        god.player.add_xp(self.tree.place_xp/5)
         self.update_rect_obj()
         god.sounds.play("upgrade")
         if self.tree.has_light:

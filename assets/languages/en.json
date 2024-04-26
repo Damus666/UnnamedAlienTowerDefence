@@ -49,5 +49,6 @@
     "unset": "Unset",
     "listening-key": "-Listening Key-",
     "reset-settings": "Reset Settings",
-    "delete-settings": "Delete Settings File"
+    "delete-settings": "Delete Settings File",
+    "free": "FREE"
 }

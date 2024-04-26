@@ -1,5 +1,6 @@
 from .engine.prelude import *
 import random
+import math
 
 from .consts import *
 from .world_props import Tile
@@ -28,8 +29,8 @@ class Building:
         ...
         
     def update_rect_obj(self):
-        if self.rect.colliderect(camera.world_rect):
-            self.rect_obj.update_positions(self.rect.center, None, self.rect.size)
+        #if self.rect.colliderect(camera.world_rect):
+        self.rect_obj.update_positions(self.rect.center, None, self.rect.size)
         if not self.building.is_bot:
             god.world.refresh_building_like()
         if self.building.has_light:
@@ -51,6 +52,8 @@ class BotBuilding(Building):
         self.next_target = None
         
         self.last_particle = 0
+        self.stop_pos = None
+        self.offset = random.random()*200
         
     def get_ui_rect_objs(self):
         if self.ore is not None:
@@ -74,6 +77,8 @@ class BotBuilding(Building):
     def miner_contact(self):
         self.target: MinerBuilding
         if self.target.amount > 0:
+            if self.rect.colliderect(camera.world_rect):
+                god.sounds.play("ore")
             self.amount = self.target.amount
             self.target.amount = 0
             self.target.refresh_amount()
@@ -82,6 +87,7 @@ class BotBuilding(Building):
             self.next_target = None
         
     def update(self):
+        self.light.active = False
         if self.target is None and self.next_target is None:
             for tree in sorted(god.world.trees, key=lambda t: t.pos.distance_to(self.rect.center)):
                 if tree.energy < tree.tree.energy:
@@ -101,6 +107,7 @@ class BotBuilding(Building):
                 
         if self.target is not None:
             if not self.rect.colliderect(self.target.rect):
+                self.stop_pos = None
                 dir = (self.target.pos-self.pos).normalize()
                 self.pos += dir*camera.dt*BOT_SPEED
                 self.rect.center = self.pos
@@ -109,16 +116,23 @@ class BotBuilding(Building):
                 else:
                     self.rect_obj.uv = self.right_uvs
                 self.update_rect_obj()
-                if camera.get_ticks() - self.last_particle >= 0.4*1000:
+                if camera.get_ticks() - self.last_particle >= 0.2*1000:
                     self.last_particle = camera.get_ticks()
                     size = (random.uniform(0.11, 0.31))
                     Particle(self.pos, (size, size), "bubble", duration=1).instantiate()
+                self.light.active = True
             else:
                 self.update_rect_obj()
                 if isinstance(self.target, MinerBuilding):
                     self.miner_contact()
                 else:
                     self.tree_contact()
+        else:
+            if self.stop_pos is None:
+                self.stop_pos = self.pos.copy()
+            self.pos = self.stop_pos + pygame.Vector2(0, math.sin((camera.get_ticks()+self.offset)*0.006)*0.3)
+            self.rect.center = self.pos
+            self.update_rect_obj()
     
     
 class MinerBuilding(Building):
@@ -159,7 +173,7 @@ class MinerBuilding(Building):
                 self.working = True
                 self.rect_obj.uv = self.on_uvs
                 self.light.active = True
-                god.world.update_buildings_batch()
+                god.world.refresh_building_like()
             if camera.get_ticks() - self.last_mine > self.mine_cooldown*1000:
                 self.last_mine = camera.get_ticks()
                 self.amount += 1
@@ -169,7 +183,7 @@ class MinerBuilding(Building):
                 self.working = False
                 self.rect_obj.uv = self.off_uvs
                 self.light.active = False
-                god.world.update_buildings_batch()
+                god.world.refresh_building_like()
         
         
 BUILDING_CLASSES: list[str, type[Building]] = {

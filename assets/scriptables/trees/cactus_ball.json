@@ -10,7 +10,7 @@
 		6,
 		0.5
 	],
-	"grow_time": 1,
+	"grow_time": 20,
 	"unlock_level": 3,
 	"price": 350,
 	"grow_xp": 0,

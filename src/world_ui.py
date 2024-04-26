@@ -187,7 +187,8 @@ class WorldUI:
         rects += self.static_top_rects
 
         # wave counter
-        rects += font.render_single_center(MAIN_FONT, f"{god.lang["wave"]} {god.world.spawner.wave_idx+1}/{god.world.spawner.waves_amount}", 
+        extra = 1 if god.world.spawner.wave_active else 0
+        rects += font.render_single_center(MAIN_FONT, f"{god.lang["wave"]} {god.world.spawner.wave_idx+extra}/{god.world.spawner.waves_amount}", 
                                            (0, camera.rect.top+PRB_H/1.2))
         
         # level
@@ -199,7 +200,7 @@ class WorldUI:
                                            (0, camera.rect.bottom-PRB_H/4), )
         
         # money
-        rects += font.render_single(MAIN_FONT, f"{god.player.money}{god.lang["currency"]}", (camera.rect.left+LEVEL_CIRCLE_SIZE[0]+S*5, LEVEL_CIRCLE_TL[1]+camera.rect.top+S*2+MONEY_ICON_W/2), 
+        rects += font.render_single(MAIN_FONT, f"{int(god.player.money)}{god.lang["currency"]}", (camera.rect.left+LEVEL_CIRCLE_SIZE[0]+S*5, LEVEL_CIRCLE_TL[1]+camera.rect.top+S*2+MONEY_ICON_W/2), 
                                     1.4, "ml", MONEY_COL)
 
         self.static_top_batch.update_rects(rects) 

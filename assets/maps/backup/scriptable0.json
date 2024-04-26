@@ -1,0 +1,62 @@
+{
+  "type": "MapData",
+  "index": 0,
+  "health": 10000,
+  "waves": [
+    [
+      {
+        "wait": 0,
+        "cooldown": 0.1,
+        "xp": 10,
+        "amount": 1,
+        "enemy": "cian_bot"
+      },
+      {
+        "wait": 3.0,
+        "cooldown": 0.9999999999999999,
+        "xp": 10,
+        "amount": 3,
+        "enemy": "cian_bot"
+      }
+    ],
+    [
+      {
+        "wait": 0,
+        "cooldown": 1.5000000000000002,
+        "xp": 15,
+        "amount": 5,
+        "enemy": "cian_bot"
+      },
+      {
+        "wait": 4.0,
+        "cooldown": 2.0000000000000004,
+        "xp": 15,
+        "amount": 7,
+        "enemy": "cian_bot"
+      }
+    ],
+    [
+      {
+        "wait": 0.0,
+        "cooldown": 0.5,
+        "xp": 10,
+        "amount": 3,
+        "enemy": "cian_bot"
+      },
+      {
+        "wait": 2.0,
+        "cooldown": 2.0000000000000004,
+        "xp": 15,
+        "amount": 3,
+        "enemy": "pink_bot"
+      },
+      {
+        "wait": 3.0,
+        "cooldown": 0.9999999999999999,
+        "xp": 10,
+        "amount": 6,
+        "enemy": "cian_bot"
+      }
+    ]
+  ]
+}

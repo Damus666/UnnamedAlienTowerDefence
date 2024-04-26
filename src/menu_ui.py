@@ -380,7 +380,8 @@ class ShopUI:
         
         for name, rect in self.trees_rects.items():
             if rect.collidepoint(camera.ui_mouse):
-                can = god.player.level >= TreeData.get(name).unlock_level and god.player.can_buy(TreeData.get(name).price)
+                tree = TreeData.get(name)
+                can = (god.player.level >= tree.unlock_level and god.player.can_buy(tree.price)) or tree.name in god.player.inventory
                 if name not in self.hovered_trees:
                     if can:
                         self.hovered_trees.append(name)
@@ -397,7 +398,7 @@ class ShopUI:
                     
         for name, rect in self.buildings_rects.items():
             if rect.collidepoint(camera.ui_mouse):
-                can = god.player.can_buy(BuildingData.get(name).price)
+                can = god.player.can_buy(BuildingData.get(name).price) or BuildingData.get(name).name in god.player.inventory
                 if name not in self.hovered_buildings:
                     if can:
                         self.hovered_buildings.append(name)
@@ -434,7 +435,8 @@ class ShopUI:
             if not unlocked:
                 rects += font.render_single_center(MAIN_FONT, f"{god.lang["level"]} {tree.unlock_level}", (x+SHOP_CARD_W/2, y+SHOP_CARD_W/2), 1.5)
             else:
-                rects += font.render_single_center(MAIN_FONT, f"{tree.price}{god.lang["currency"]}", (x+SHOP_CARD_W/2, y+SHOP_CARD_W-CARD_S*2.2), 1.5, MONEY_COL)
+                price = f"{tree.price}{god.lang["currency"]}" if tree.name not in god.player.inventory else f"{god.lang["free"]}"
+                rects += font.render_single_center(MAIN_FONT, price, (x+SHOP_CARD_W/2, y+SHOP_CARD_W-CARD_S*2.2), 1.5, MONEY_COL)
                 
             self.trees_rects[tree.name] = pygame.FRect(x, y, SHOP_CARD_W, SHOP_CARD_W)
             x += SHOP_CARD_W+CARD_S
@@ -450,7 +452,8 @@ class ShopUI:
             rects += ui.panel_outline_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), UNHOVER_OUTLINE if not hovered else HOVER_OUTLINE)
             rects += ui.image(None, (SHOP_CARD_W/1.8, SHOP_CARD_W/1.8), building.tex_name, WHITE,
                               (x+SHOP_CARD_W/2, y+SHOP_CARD_W/2))
-            rects += font.render_single_center(MAIN_FONT, f"{building.price}{god.lang["currency"]}", (x+SHOP_CARD_W/2, y+SHOP_CARD_W-CARD_S*2.2), 1.5, MONEY_COL)
+            price = f"{building.price}{god.lang["currency"]}" if building.name not in god.player.inventory else f"{god.lang["free"]}"
+            rects += font.render_single_center(MAIN_FONT, price, (x+SHOP_CARD_W/2, y+SHOP_CARD_W-CARD_S*2.2), 1.5, MONEY_COL)
 
             self.buildings_rects[building.name] = pygame.FRect(x, y, SHOP_CARD_W, SHOP_CARD_W)
             x += SHOP_CARD_W+CARD_S

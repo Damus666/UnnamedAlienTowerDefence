@@ -8,7 +8,7 @@ from . import god
 class Sounds:
     @staticmethod
     def pre_init():
-        pygame.mixer.pre_init(buffer=2048, allowedchanges=pygame.AUDIO_ALLOW_ANY_CHANGE)
+        pygame.mixer.pre_init(buffer=40496, allowedchanges=pygame.AUDIO_ALLOW_ANY_CHANGE)
     
     def __init__(self):        
         sound_assets: list[SoundAsset] = [
@@ -23,6 +23,9 @@ class Sounds:
             single("win", 1),
             single("next_wave", 1),
             single("tree_place", 0.8),
+            single("alien", 0.6),
+            single("ore", 0.4),
+            single("roar", 0.8),
             
             folder("building_place", 0.7),
             folder("hit", 0.5),
@@ -45,7 +48,7 @@ class Sounds:
     def music_play(self, name):
         pygame.mixer_music.unload()
         pygame.mixer_music.load(f"assets/sounds/{name}.wav")
-        pygame.mixer_music.play(-1)
+        pygame.mixer_music.play(-1, fade_ms=4000)
         
     def music_pause(self):
         pygame.mixer_music.pause()

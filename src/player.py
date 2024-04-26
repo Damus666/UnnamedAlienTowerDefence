@@ -20,6 +20,7 @@ class Player:
         self.level = 1
         self.next_level_xp = NEXT_LEVEL_START_XP
         self.money = PLAYER_START_MONEY
+        self.inventory = ["bot", "energy_distributor", "energy_source", "miner"]
                 
         self.status = "idle"
         self.y_status = "down"
@@ -110,7 +111,10 @@ class Player:
     def plant(self, pos):
         tree = Tree(self.seed_planting, pos)
         god.world.add_tree(tree)
-        self.buy(self.seed_planting.price)
+        if tree.tree.name in self.inventory:
+            self.inventory.remove(tree.tree.name)
+        else:
+            self.buy(self.seed_planting.price)
         self.add_xp(self.seed_planting.place_xp)
         if not self.can_buy_seed(self.seed_planting):
             self.stop_planting()
@@ -138,7 +142,10 @@ class Player:
     def build(self, pos):
         building = BUILDING_CLASSES[self.building.name](self.building, pos)
         god.world.add_building(building)
-        self.buy(self.building.price)
+        if building.building.name in self.inventory:
+            self.inventory.remove(building.building.name)
+        else:
+            self.buy(self.building.price)
         self.add_xp(self.building.place_xp)
         if not self.can_buy(self.building.price):
             self.stop_planting()

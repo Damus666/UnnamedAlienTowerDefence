@@ -5,7 +5,7 @@ from . import ctx
 class Light:
     def __init__(self, pos, color, range, intensity):
         self.color, self.range, self.intensity = color, range, intensity
-        self.rect = pygame.FRect(0, 0, range*2, range*2)
+        self.rect = pygame.FRect(0, 0, range*1.6, range*2*1.6)
         self.rect.center = pos
         self.active = True
         if len(self.color) > 3:

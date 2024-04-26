@@ -17,6 +17,7 @@ class World(Scene):
     
     def init(self, map: MapData):
         god.world = self
+        god.sounds.play("alien")
         self.map = map
         self.health = self.map.health
         self.map_loader = MapLoader(self.map)
@@ -58,8 +59,7 @@ class World(Scene):
         self.uparticles_rect_objs = []+self.silly_obj
         self.uparticles_batch = GrowingRectsBatch(UNLIT_SHADER, *SHADER_UNIFORMS)
         
-        self.follow_pos = [pygame.Vector2(sp) for sp in sorted(self.map_loader.follow_positions,
-                                                               key = lambda pos: pos[1])]
+        self.follow_pos = [pygame.Vector2(sp) for sp in self.map_loader.sorted_pos]
         self.follow_rects = [pygame.FRect(sp.x, sp.y, 0.2, 0.2) for sp in self.follow_pos]
         
         self.builder.build()

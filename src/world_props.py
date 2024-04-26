@@ -119,8 +119,8 @@ class EnemyWaveSpawner:
                 
     def start_wave(self):
         self.wave_active = True
-        self.stage_active = True
         self.wave_enemies_amount = sum([stage["amount"] for stage in god.world.map.waves[self.wave_idx]])
+        self.start_stage()
         god.world.ui.update_static()
         god.sounds.play("next_wave")
         
@@ -327,9 +327,31 @@ class MapLoader:
         self.collisions = [pygame.FRect(pos, (OBJ_SIZE, OBJ_SIZE)) for pos in data["collision"]]
         self.spawn = data["spawn"]
         if not self.spawn:
-            raise RuntimeError(f"Map missing spawn position")
-        self.follow_positions = data["pos"]
+            raise RuntimeError(f"Map {map.id} missing spawn position")
+        self.follow_positions: list[tuple[int, int]] = data["pos"]
+        if len(self.follow_positions) < 1:
+            raise RuntimeError(f"Map {map.id} does not have enough follow positions")
         self.oxygen_positions = data["oxygen"]
+        
+        current_pos = sorted(self.follow_positions, key=lambda x: x[1])[0]
+        self.follow_positions.remove(current_pos)
+        current_pos = pygame.Vector2(current_pos)
+        self.sorted_pos = [current_pos]
+        while len(self.follow_positions) > 0:
+            closest = None
+            closest_dist = 0
+            for pos in self.follow_positions:
+                if closest is None:
+                    closest = pos
+                    closest_dist = current_pos.distance_to(pos)
+                else:
+                    if (curdist:=current_pos.distance_to(pos)) < closest_dist:
+                        closest = pos
+                        closest_dist = curdist
+            self.follow_positions.remove(closest)
+            closest = pygame.Vector2(closest)
+            self.sorted_pos.append(closest)
+            current_pos = closest
         
         self.floor = {}
         self.height = {}

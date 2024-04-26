@@ -7,11 +7,11 @@ from src.assets import Assets
 from src.sounds import Sounds
 from src.settings import Settings, Languages
 from src.consts import *
-from src import god
+from src import god 
 
 class App(SceneManager):
     def __init__(self):
-        god.app = self
+        god.app = self 
         Sounds.pre_init()
         Settings.get_user_path()
         camera.init_window(WIDTH, HEIGHT, TITLE, PROJ_SIZE, 0)
@@ -23,7 +23,6 @@ class App(SceneManager):
         god.settings = Settings()  
         god.sounds = Sounds() 
         self.screen_buffer = Screenbuffer()
-        
         self.screen_buffer.refresh_buffer(WIDTH, HEIGHT, god.settings.scaled_mul)
         self.load_scene(World.name, MapData.get("map0"))
         #import ez_profile
