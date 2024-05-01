@@ -135,11 +135,13 @@ class Wave:
         self.index = id
         self.font = pygame.Font("assets/fonts/alien.ttf", 30)
         self.font2 = pygame.Font("assets/fonts/alien.ttf", 22)
+        self.visible = False
         
     def draw(self, y):
         mouse = pygame.mouse.get_pos()
         just_pressed = pygame.key.get_just_pressed()
-        txt_surf = self.font.render(f"Wave {self.index}", True, "white")
+        extra = f"" if self.visible else f" (hidden)"
+        txt_surf = self.font.render(f"Wave {self.index}{extra} ({sum([stage.amount for stage in self.stages])})", True, "white")
         txt_rect = txt_surf.get_rect(topleft = (S+50, y))
         main.screen.blit(txt_surf, txt_rect)
         txt_rect = txt_rect.inflate(6, 0)
@@ -161,8 +163,13 @@ class Wave:
                 main.refresh_waves()
             elif main.clicked:
                 self.stages.append(Stage("cian", 1, 0, 0.1, 1))
-            
+            elif main.clicked_middle:
+                self.visible = not self.visible
+                
         y += txt_rect.h+S
+        if not self.visible:
+            return y
+        
         for stage in list(self.stages):
             y = stage.draw(y, self.font2, self)
         return y
@@ -193,6 +200,7 @@ class EvergreenDefenseMapEditor:
         self.scroll_offset = 0
         self.waves: list[Wave] = []
         self.clicked = False
+        self.clicked_middle = False
         
         self.images = {
             "rock": get_image("tiles/rockblock"),
@@ -384,8 +392,15 @@ class EvergreenDefenseMapEditor:
         for wave in list(self.waves):
             y = wave.draw(y)
             
+        time = round(sum([sum([stage.wait+stage.cooldown*stage.amount for stage in wave.stages])+45 for wave in self.waves])/60)
+        surf = self.font1.render(f"Cumulative map time: ~{time} minutes", True, "white")
+        rect = surf.get_rect(topleft=(S+50, y))
+        self.screen.blit(surf, rect)
+            
         if self.clicked:
             self.clicked = False
+        if self.clicked_middle:
+            self.clicked_middle = False
     
     def draw_ui(self):
         mouse = pygame.mouse.get_pos()
@@ -500,7 +515,7 @@ class EvergreenDefenseMapEditor:
             for stage in wave:
                 stages.append(Stage(stage["enemy"], stage["amount"], stage["xp"], stage["cooldown"], stage["wait"]))
             self.waves.append(Wave(i, stages))
-            
+        
         self.update_draw()
         
     def save(self):
@@ -581,7 +596,9 @@ class EvergreenDefenseMapEditor:
                     if rect.collidepoint(event.pos):
                         if name == "+":
                             if self.mode == "wave":
-                                self.waves.append(Wave(len(self.waves)))
+                                wave = Wave(len(self.waves))
+                                wave.visible = True
+                                self.waves.append(wave)
                         else:
                             getattr(self, name)()
                 for id, rect in self.map_id_rects.items():
@@ -598,6 +615,8 @@ class EvergreenDefenseMapEditor:
                     for name, rect in self.enemy_rects.items():
                         if rect.collidepoint(event.pos):
                             self.change_enemy(name)
+            elif event.button == pygame.BUTTON_MIDDLE:
+                self.clicked_middle = True
             
         elif event.type == pygame.MOUSEWHEEL:
             if pygame.mouse.get_pos()[0] < VIEW_W:

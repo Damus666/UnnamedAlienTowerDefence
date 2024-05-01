@@ -81,7 +81,7 @@
   },
   {
     "color": "boss",
-    "health": 1500,
+    "health": 15000,
     "speed": 5,
     "xp": 1000,
     "buff": "",
