@@ -16,7 +16,7 @@ class Assets:
         self.load_named_folders("plants", "stars")
         self.load_pg()
         font.add_font(MAIN_FONT, pygame.Font("assets/fonts/alienbig.ttf", 300), 
-                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE, "à€äöüßÄÖÜőáúűóöüúéŐÚíÁ", 
+                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE, "àù€äöüßÄÖÜőáúűóöüúéŐÚíÁ", 
                       "אבגדהוזחטיכךלמםנןסעפףתץקרשת", pygame.Font("assets/fonts/hebrew.ttf", 300),
                       "ج ح خ ه ع غ ف ق ث ص ض ة ك م ن ت ا ل ب ي س ش ى و ر ز د ذ ط ظ ء", pygame.Font("assets/fonts/arabic.ttf", 300))
         

@@ -50,10 +50,9 @@ class TreeAttack:
         if len(enemies) == 1:
             return enemies[0]
         else:
-            sorted_enemies = sorted(enemies, key=(lambda e: e.enemy.speed*e.enemy.health))
-            #for e in sorted_enemies:
-            #    if e not in self.world.enemies_shot:
-            #        return e
+            sorted_enemies = sorted(filter((lambda enemy: enemy.expected_health > 0), enemies), key=(lambda e: e.enemy.speed*e.enemy.health))
+            if len(sorted_enemies) <= 0:
+                return None
             return sorted_enemies[0]
                 
     def predict_enemy_pos(self, enemy=None):
@@ -70,17 +69,15 @@ class TreeAttack:
     def start_attack(self):
         ...
         
-    def shoot(self, pos, size, dir, proj, attrs=None, invis_enemies=None, target=None):
+    def shoot(self, pos, size, dir, proj, attrs=None, invis_enemies=None, target: Enemy=None):
+        if target:
+            target.expect_attack(proj["damage"])
         god.world.add_uparticle(Proj(pos, size, dir, self.tree, proj, attrs, invis_enemies))
-        if target and target not in god.world.enemies_shot:
-            god.world.enemies_shot.append(target)
         
     def hit_effect(self, enemy: Enemy):
         if self.tree_data.has_effect:
             extra = list(filter((lambda x: x[0] not in ["name", "ticks"]), list(self.tree_data.effect.items())))[0][1]
             enemy.add_effect(self.tree_data.effect["name"], self.tree_data.effect["ticks"], extra)
-        if enemy in god.world.enemies_shot:
-            god.world.enemies_shot.remove(enemy)
         
     def hit(self, enemy: Enemy, proj):
         self.hit_effect(enemy)

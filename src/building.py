@@ -111,6 +111,8 @@ class BotBuilding(Building):
         self.light.active = False
         if self.target is None and self.next_target is None:
             for tree in sorted(god.world.trees, key=lambda t: t.pos.distance_to(self.rect.center)):
+                if not tree.grown:
+                    continue
                 if tree.energy < tree.tree.energy:
                     if self.amount <= 0:
                         self.next_target = tree

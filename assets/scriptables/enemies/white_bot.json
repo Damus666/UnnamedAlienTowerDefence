@@ -12,7 +12,7 @@
 	],
 	"tex_name": "red_bot",
 	"speed": 7,
-	"health": 200,
+	"health": 350,
 	"reward_mul": 1.5,
 	"buff": "no_effect",
 	"xp": 180

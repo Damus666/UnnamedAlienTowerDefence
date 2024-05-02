@@ -9,7 +9,7 @@
   },
   {
     "color": "pink",
-    "health": 80,
+    "health": 90,
     "speed": 4,
     "xp": 20,
     "buff": "",
@@ -17,7 +17,7 @@
   },
   {
     "color": "green",
-    "health": 100,
+    "health": 120,
     "speed": 4,
     "xp": 25,
     "buff": "cure",
@@ -25,7 +25,7 @@
   },
   {
     "color": "orange",
-    "health": 150,
+    "health": 190,
     "speed": 5,
     "xp": 40,
     "buff": "",
@@ -33,7 +33,7 @@
   },
   {
     "color": "yellow",
-    "health": 150,
+    "health": 160,
     "speed": 4,
     "xp": 50,
     "buff": "speed",
@@ -41,7 +41,7 @@
   },
   {
     "color": "red",
-    "health": 180,
+    "health": 230,
     "speed": 5,
     "xp": 70,
     "buff": "rage",
@@ -49,7 +49,7 @@
   },
   {
     "color": "blue",
-    "health": 120,
+    "health": 200,
     "speed": 4,
     "xp": 100,
     "buff": "armor",
@@ -57,7 +57,7 @@
   },
   {
     "color": "purple",
-    "health": 200,
+    "health": 280,
     "speed": 8,
     "xp": 130,
     "buff": "",
@@ -65,7 +65,7 @@
   },
   {
     "color": "white",
-    "health": 200,
+    "health": 350,
     "speed": 7,
     "xp": 180,
     "buff": "no_effect",
@@ -73,7 +73,7 @@
   },
   {
     "color": "black",
-    "health": 200,
+    "health": 400,
     "speed": 7,
     "xp": 200,
     "buff": "only_effect",

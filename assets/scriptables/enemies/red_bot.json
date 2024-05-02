@@ -11,7 +11,7 @@
 		0.5
 	],
 	"speed": 5,
-	"health": 180,
+	"health": 230,
 	"reward_mul": 1.2,
 	"buff": "rage",
 	"size": 1,

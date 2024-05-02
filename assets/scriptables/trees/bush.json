@@ -10,7 +10,7 @@
 		5,
 		0.4
 	],
-	"grow_time": 8,
+	"grow_time": 1.3333333333333333,
 	"unlock_level": 1,
 	"price": 100,
 	"energy": 20.0,

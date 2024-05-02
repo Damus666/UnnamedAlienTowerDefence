@@ -10,7 +10,7 @@
 		7,
 		0.5
 	],
-	"grow_time": 15,
+	"grow_time": 2.5,
 	"unlock_level": 1,
 	"price": 250,
 	"attack_range": 13,

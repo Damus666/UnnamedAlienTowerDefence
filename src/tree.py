@@ -15,7 +15,7 @@ class Tree:
         self.rect = pygame.FRect(0, 0, tree.size, tree.size)
         self.rect.center = pos
         self.pos = pygame.Vector2(pos)
-        self.energy = self.tree.energy
+        self.energy = self.tree.energy*2
         self.rect_obj = RectObj(pos, None, (tree.size*self.size_mul, tree.size*self.size_mul), None, 
                                 WORLD_ATLAS, god.assets.get_uvs(self.tree.tex_name))
         
@@ -48,7 +48,7 @@ class Tree:
         
     def get_bar_rect_objs(self):
         if self.energy != self.energy_bar.val:
-            self.energy_bar.set_value(self.energy)
+            self.energy_bar.set_value(min(self.energy, self.tree.energy))
         if not self.grown:
             self.progress_bar.set_value(self.size_mul-0.5, 1-0.5)
         else:
@@ -82,6 +82,5 @@ class Tree:
                 self.update_rect_obj()
             if self.size_mul >= 1:
                 self.finish_growing()
-            return
         self.attacker.update()
             

@@ -11,7 +11,7 @@ for tree in trees:
     if os.path.exists(f"assets/scriptables/trees/{tree['name']}.json"):
         with open(f"assets/scriptables/trees/{tree['name']}.json", "r") as file:
             tree_data = json.load(file)
-        tree_data["grow_time"] = tree["grow time"]
+        tree_data["grow_time"] = tree["grow time"]/6
         tree_data["unlock_level"] = tree["level"]
         tree_data["attack_range"] = tree["range"]
         tree_data["attack_cooldown"] = tree["cooldown"]

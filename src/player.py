@@ -322,6 +322,10 @@ class Player:
         self.stop_destroying()
         if god.world.ui.tree_range_active:
             god.world.ui.toggle_tree_range()
+            
+    def event_start_wave(self):
+        if not god.world.spawner.wave_active and god.settings.tutorial.complete:
+            god.world.spawner.start_wave()
         
     def event(self, event: pygame.Event):
         if god.world.ui.pause.settings.listening:
@@ -353,6 +357,10 @@ class Player:
         
         if god.settings.binds["destroy_mode"].check_event(event):
             self.event_destroy()
+            return
+        
+        if god.settings.binds["start_wave"].check_event(event):
+            self.event_start_wave()
             return
         
         if not god.world.ui.pause.is_open and god.settings.binds["shop"].check_event(event):

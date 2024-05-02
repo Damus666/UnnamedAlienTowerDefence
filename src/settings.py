@@ -57,8 +57,11 @@ class Languages:
         return list(self.langs.keys())
                 
     def get(self, name) -> str:
-        res = self.langs[god.settings.lang][name]
-        if god.settings.lang in ["heb", "ar"]:
+        lang = god.settings.lang
+        if name not in self.langs[god.settings.lang]:
+            lang = DEFAULT_LANGUAGE
+        res = self.langs[lang][name]
+        if lang in ["heb", "ar"]:
             return res[::-1]
         return res
     
@@ -138,6 +141,7 @@ class Settings:
         self.lang = PREF_LANGUAGE if PREF_LANGUAGE in god.lang.langs.keys() else DEFAULT_LANGUAGE
         self.music_vol = 1
         self.fx_vol = 1
+        self.manual_wave = False
         self.binds: dict[str, Keybind] = {
             "left": Keybind(KC(pygame.K_a), KC(pygame.K_LEFT)),
             "right": Keybind(KC(pygame.K_d), KC(pygame.K_RIGHT)),
@@ -149,6 +153,7 @@ class Settings:
             "cancel_action": Keybind(KC(pygame.K_ESCAPE)),
             "destroy_mode": Keybind(KC(pygame.K_BACKSPACE), KC(pygame.K_DELETE)),
             "place": Keybind(KC(pygame.BUTTON_LEFT, "mouse")),
+            "start_wave": Keybind(KC(pygame.K_RETURN)),
             "ui_click": Keybind(KC(pygame.BUTTON_LEFT, "mouse")),
         }
         self.save("default_settings")
@@ -159,8 +164,9 @@ class Settings:
         if os.path.exists(f"{Settings.user_path}{filename}.json"):
             with open(f"{Settings.user_path}{filename}.json", "r") as file:
                 data = json.load(file)
-                for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti"]:
-                    setattr(self, name, data[name])
+                for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave"]:
+                    if name in data:
+                        setattr(self, name, data[name])
                 for name, kb_data in data["binds"].items():
                     self.binds[name] = Keybind(KC(kb_data["main"]["code"], kb_data["main"]["type"]),
                                             *[KC(alt_data["code"], alt_data["type"]) for alt_data in kb_data["alts"]])
@@ -168,7 +174,7 @@ class Settings:
     def save(self, filename="settings"):
         with open(f"{Settings.user_path}{filename}.json", "w") as file:
             data = {
-                name: getattr(self, name) for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti"]
+                name: getattr(self, name) for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave"]
             }
             data["binds"] = {name: {
                                         "main": {"code": kb.bind.code, "type": kb.bind.type}, 

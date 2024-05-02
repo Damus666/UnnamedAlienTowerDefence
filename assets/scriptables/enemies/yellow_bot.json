@@ -11,7 +11,7 @@
 		0.5
 	],
 	"speed": 4,
-	"health": 150,
+	"health": 160,
 	"reward_mul": 1.2,
 	"buff": "speed",
 	"xp": 50

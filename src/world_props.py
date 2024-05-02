@@ -77,8 +77,9 @@ class EnemyWaveSpawner:
         if not god.settings.tutorial.complete:
             self.wave_end_time = camera.get_ticks()
         if not self.wave_active:
-            if camera.get_ticks() - self.wave_end_time > WAVE_COOLDOWN*1000:
-                self.start_wave()
+            if not god.settings.manual_wave:
+                if camera.get_ticks() - self.wave_end_time > WAVE_COOLDOWN*1000:
+                    self.start_wave()
         else:
             if not self.stages_completed:
                 if self.stage_active:
@@ -123,6 +124,11 @@ class EnemyWaveSpawner:
         self.wave_active = True
         self.wave_enemies_amount = sum([stage["amount"] for stage in god.world.map.waves[self.wave_idx]])
         self.start_stage()
+        
+        for miner in god.world.miner_buildings:
+            if miner.can_work:
+                miner.amount = miner.stack_size
+        
         god.world.ui.update_static()
         god.sounds.play("next_wave")
         

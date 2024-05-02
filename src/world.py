@@ -53,7 +53,6 @@ class World(Scene):
         self.bots: list[BotBuilding] = []
         self.bots_rect_objs = []
         self.bots_batch = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
-        self.enemies_shot = []
         
         self.uparticles = []
         self.uparticles_rect_objs = []+self.silly_obj

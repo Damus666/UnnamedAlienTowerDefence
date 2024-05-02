@@ -138,7 +138,7 @@ class SpeedBuff(EnemyBuff):
         self.speed_mul = BUFF_MAX_SPEED
         
     def update(self):
-        x = self.enemy.follow_pos_idx/len(self.enemy.world.follow_pos)
+        x = self.enemy.follow_pos_idx/len(god.world.follow_pos)
         self.speed_mul = BUFF_MAX_SPEED-(x*(BUFF_MAX_SPEED-1))
         
 class NoEffectBuff(EnemyBuff):

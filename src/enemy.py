@@ -21,7 +21,9 @@ class Enemy:
         self.next_follow_pos = god.world.follow_pos[0]
         self.next_rect = god.world.follow_rects[0]
         self.health = self.enemy.health
+        self.expected_health = self.enemy.health
         self.last_damage = -1000
+        self.last_expected_health_refresh = -1000
         self.direction = pygame.Vector2()
         self.speed_mul = 1
         self.effects: dict[str, AttackEffect] = {}
@@ -48,13 +50,14 @@ class Enemy:
             self.health -= damage
             self.last_damage = camera.get_ticks()
             god.sounds.play_random("hit")
-            if self in god.world.enemies_shot:
-                god.world.enemies_shot.remove(self)
             if self.health <= 0:
                 self.health = 0
                 god.player.add_money(self.enemy.reward)
                 god.player.add_xp(self.enemy.xp)
                 self.destroy()
+                
+    def expect_attack(self, damage):
+        self.expected_health -= damage
                 
     def heal(self, amount):
         self.health += amount
@@ -75,6 +78,9 @@ class Enemy:
             self.light.rect.center = self.rect.center
         
     def update(self):
+        if camera.get_ticks() - self.last_expected_health_refresh >= 2.5*1000:
+            self.last_expected_health_refresh = camera.get_ticks()
+            self.expected_health = self.health
         for effect in list(self.effects.values()):
             effect.update()
         self.buff.update()
@@ -110,8 +116,6 @@ class Enemy:
                                              (self.rect.centerx, self.rect.bottom+WORLD_BAR_H), HEALTH_BAR_FILL, HEALTH_BAR_BG, outline="m")        
                     
     def destroy(self):
-        if self in god.world.enemies_shot:
-            god.world.enemies_shot.remove(self)
         if self.enemy.has_light:
             god.world.remove_dynamic_light(self.light)
         for effect in list(self.effects.values()):

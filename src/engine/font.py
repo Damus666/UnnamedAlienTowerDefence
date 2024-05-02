@@ -59,6 +59,9 @@ def render_single(font_name: str, text: str, position, scale=1, pos_name="center
         elif pos_name == "ml":
             char[1] += position[0]
             char[2] += position[1]-h/2
+        elif pos_name == "mb":
+            char[1] += position[0]-x/2
+            char[2] += position[1]-h
 
         robj = RectObj(None, (char[1], char[2]), (char[3], bitmap.height*scale), color, bitmap.tex_id,
                        bitmap.atlas.get_uvs(f"{font_name}_{char[0]}"))
@@ -152,6 +155,9 @@ def render_full(font_name: str, text: str, position, scale, pos_name="center", m
         elif pos_name == "ml":
             char[1] += position[0]
             char[2] += position[1]-h/2
+        elif pos_name == "mb":
+            char[1] += position[0]-w/2
+            char[2] += position[1]-h
 
         robj = RectObj(None, (char[1], char[2]), (char[3], bitmap.height*scale), color, bitmap.tex_id,
                        bitmap.atlas.get_uvs(f"{font_name}_{char[0]}"))

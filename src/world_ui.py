@@ -88,7 +88,7 @@ class WorldUI:
         self.overlay_rects = []
         self.overlay_rect = pygame.FRect(camera.rect.right-S-OVERLAYBTN_SIZE[0], camera.rect.bottom-S-OVERLAYBTN_SIZE[0]*4-S*4, OVERLAYBTN_SIZE[0]*2, OVERLAYBTN_SIZE[0]*5)
         y = camera.rect.bottom-S
-        for name in (["pause", "shop", "destroy", "range"]):
+        for name in (["pause", "shop", "destroy", "range", "start_wave"]):
             pos = (camera.rect.right-S-OVERLAYBTN_SIZE[0], y-OVERLAYBTN_SIZE[0])
             innerpos = (pos[0]+OVERLAYBTN_SIZE[0]/2, pos[1]+OVERLAYBTN_SIZE[0]/2)
             self.overlay_bgs.append(ui.image(pos, OVERLAYBTN_SIZE, "circle", BTN_BG))
@@ -144,9 +144,12 @@ class WorldUI:
         if not god.world.spawner.wave_active:
             # next wave
             next_wave = WAVE_COOLDOWN-((camera.get_ticks()-god.world.spawner.wave_end_time)/1000)
-            self.top_bar.set_value(next_wave, WAVE_COOLDOWN)
+            self.top_bar.set_value(WAVE_COOLDOWN if god.settings.manual_wave else next_wave, WAVE_COOLDOWN)
             rects += self.top_bar.fill_rect_objs
-            text = f"{god.lang["next-wave"]} {int(next_wave)}{god.lang["second-short"]}"
+            if god.settings.manual_wave:
+                text = f"{god.lang["manual-wave-help"]}"
+            else:
+                text = f"{god.lang["next-wave"]} {int(next_wave)}{god.lang["second-short"]}"
             if not god.settings.tutorial.complete:
                 text = f"{god.lang["finish-or-skip-tutorial"]}"
             rects += font.render_single_center(MAIN_FONT, 
@@ -179,7 +182,7 @@ class WorldUI:
         # overlay
         if not self.pause.is_open:
             y = camera.rect.bottom-S
-            for i, name in enumerate(["pause", "shop", "destroy", "range"]):
+            for i, name in enumerate(["pause", "shop", "destroy", "range", "start_wave"]):
                 rects += self.overlay_bgs[i]
                 if self.overlay_activity(name):
                     rects += self.overlay_icons_active[i]
@@ -221,7 +224,7 @@ class WorldUI:
         if god.settings.binds["ui_click"].check_event(event):
             for i, rect in enumerate(self.overlay_rects):
                 if rect.collidepoint(camera.ui_mouse):
-                    getattr(god.player, f"event_{["pause", "shop", "destroy", "range"][i]}")()
+                    getattr(god.player, f"event_{["pause", "shop", "destroy", "range", "start_wave"][i]}")()
                     break
             if self.tutorial_rect.collidepoint(camera.ui_mouse):
                 god.settings.tutorial.skip()
@@ -246,6 +249,8 @@ class WorldUI:
                 return god.player.destroying
             case "range":
                 return self.tree_range_active
+            case "start_wave":
+                return god.world.spawner.wave_active
         
     def update_world(self):
         rects = []+god.world.silly_obj

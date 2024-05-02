@@ -49,7 +49,7 @@ class SettingsUI:
         }
                 
     def build(self):
-        ah, w, atop, left = camera.rect.h/1.5, camera.rect.w/2, -camera.rect.h/1.5/2, -camera.rect.w/4
+        ah, w, atop, left = camera.rect.h/1.4, camera.rect.w/2, -camera.rect.h/1.42/2, -camera.rect.w/4
         h, top = ah-MBTN_SIZE[1]-UI_S, atop+MBTN_SIZE[1]+UI_S
         left_cx, right_cx = left+w/4, left+((w/4)*3)
         main, general, perf, binds = [], [], [], []
@@ -66,7 +66,7 @@ class SettingsUI:
             
         main += ui.panel_rect_objs((w, h), SHOP_CARD_C/2, (left, top), (0, 0, 0, 0.5))
         main += ui.panel_outline_rect_objs((w, h), SHOP_CARD_C/2, (left, top), UNHOVER_OUTLINE)
-        r = UIRect(BBTN_SIZE, (0, ah/2+UI_S+BBTN_SIZE[1]/2), None, "back", "main", self)
+        r = UIRect(BBTN_SIZE, (0, ah/2+UI_S+BBTN_SIZE[1]/1.5), None, "back", "main", self)
         main += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"{god.lang["back"]}", 1.3, "m", r.rect.center)
         
         # general
@@ -103,12 +103,18 @@ class SettingsUI:
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1.2, cy), None, "fx_plus", "general", self, self.fx_click, 1)
         general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"+", BTN_TEXT, center=r.rect.center)
         
+        cy += BBTN_SIZE[1]+UI_S
+        
+        general += font.render_single_center(MAIN_FONT, f"{god.lang["manual-start-wave"]}", (left_cx, cy), LABEL_SIZE)
+        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx, cy), None, "manual_start_wave", "general", self)
+        general += ui.checkbox(r.rect.center, r.rect.w, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, god.settings.manual_wave)
+        
         cy += BBTN_SIZE[1]*5+UI_S
         
         r = UIRect((BBTN_SIZE[0]*1.7, MBTN_SIZE[1]), (0, cy), None, "reset", "general", self)
         general += ui.button(r.rect.topleft, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"{god.lang["reset-settings"]}", BTN_TEXT)
         
-        cy += BBTN_SIZE[1]+UI_S
+        cy += BBTN_SIZE[1]+UI_S/4
         
         r = UIRect((BBTN_SIZE[0]*1.7, MBTN_SIZE[1]), (0, cy), None, "delete", "general", self)
         general += ui.button(r.rect.topleft, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"{god.lang["delete-settings"]}", BTN_TEXT)
@@ -331,6 +337,10 @@ class SettingsUI:
         god.settings.fps_counter = not god.settings.fps_counter
         self.build()
         
+    def manual_start_wave_click(self):
+        god.settings.manual_wave = not god.settings.manual_wave
+        self.build()
+        
     def confetti_click(self):
         god.settings.confetti = not god.settings.confetti
         self.build()
@@ -424,6 +434,7 @@ class ShopUI:
     def build(self):
         rects = []
         
+        hovered_name = None
         trees_amount = len(TreeData.get_all())
         total_w = SHOP_CARD_W*trees_amount+CARD_S*trees_amount
         x = -total_w/2
@@ -435,6 +446,8 @@ class ShopUI:
             waited = not god.settings.tutorial.unlocked_plant()
             unlocked = god.player.level >= tree.unlock_level and not waited
             hovered = tree.name in self.hovered_trees
+            if hovered and unlocked:
+                hovered_name = tree.name
             
             rects += ui.panel_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), CARD_BG)
             rects += ui.panel_outline_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), UNHOVER_OUTLINE if not hovered else HOVER_OUTLINE)
@@ -456,6 +469,8 @@ class ShopUI:
         for building in [BuildingData.get(name) for name in [BOT, MINER, ENERGY_DISTRIBUTOR, ENERGY_SOURCE]]:
             hovered = building.name in self.hovered_buildings
             waited = not god.settings.tutorial.unlocked_building(building.name)
+            if hovered and not waited:
+                hovered_name = building.name
             
             rects += ui.panel_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), CARD_BG)
             rects += ui.panel_outline_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), UNHOVER_OUTLINE if not hovered else HOVER_OUTLINE)
@@ -469,6 +484,18 @@ class ShopUI:
 
             self.buildings_rects[building.name] = pygame.FRect(x, y, SHOP_CARD_W, SHOP_CARD_W)
             x += SHOP_CARD_W+CARD_S
+            
+        if hovered_name is not None:
+            desc_txt, desc_w, desc_h = font.render_full(MAIN_FONT, f"{god.lang[f"{hovered_name}-desc"]}", (0, camera.rect.h/3.5), 1, "center", camera.rect.w/6)
+            txt = f"{god.lang[hovered_name]}"
+            title_txt = font.render_single(MAIN_FONT, txt, (0, camera.rect.h/3.5-desc_h/2-S), 1.7, "mb")
+            title_h, title_w = font.render_single_height(MAIN_FONT, 1.7), font.render_single_width(MAIN_FONT, txt, 1.7)
+            cum_h, cum_w = desc_h+S*6+title_h, max(title_w+S*6, desc_w+S*6)
+            center_h = ((camera.rect.h/3.5+desc_h/2)+(camera.rect.h/3.5-desc_h/2-S*7-title_h/2))/2
+            tl = (0-cum_w/2, center_h-cum_h/2)
+            rects += ui.panel_rect_objs((cum_w, cum_h), 0, tl, CARD_BG)
+            rects += desc_txt
+            rects += title_txt
         
         self.ui_batch.update_rects(rects)
         
