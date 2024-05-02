@@ -11,12 +11,12 @@ class Assets:
         self.ui_atlas = SpriteAtlas(2)
         self.font_atlas = SpriteAtlas(20)
         
-        self.load_folders("tiles", "trees", "buildings", "other", "particles", "enemies", "icons", "items")
-        self.load_ui_folders("items", "trees", "buildings")
+        self.load_folders("tiles", "trees", "buildings", "other", "particles", "enemies", "items")
+        self.load_ui_folders("items", "trees", "buildings", "icons")
         self.load_named_folders("plants", "stars")
         self.load_pg()
         font.add_font(MAIN_FONT, pygame.Font("assets/fonts/alienbig.ttf", 300), 
-                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE, "€äöüßÄÖÜőáúűóöüúéŐÚ", 
+                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE, "à€äöüßÄÖÜőáúűóöüúéŐÚíÁ", 
                       "אבגדהוזחטיכךלמםנןסעפףתץקרשת", pygame.Font("assets/fonts/hebrew.ttf", 300),
                       "ج ح خ ه ع غ ف ق ث ص ض ة ك م ن ت ا ل ب ي س ش ى و ر ز د ذ ط ظ ء", pygame.Font("assets/fonts/arabic.ttf", 300))
         
@@ -79,6 +79,8 @@ class Assets:
         for name in names:
             for file in os.listdir(f"assets/images/{name}"):
                 surf = pygame.image.load(f"assets/images/{name}/{file}").convert_alpha()
+                if name == "icons":
+                    surf = pygame.transform.scale_by(surf, 0.6)
                 self.ui_atlas.add(surf, file.split('.')[0])
         
     def load_named_folders(self, *names):

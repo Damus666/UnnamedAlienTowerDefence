@@ -180,6 +180,8 @@ class SettingsUI:
         cy += MBTN_SIZE[1]+UI_S*0.5
         
         for name, bind in god.settings.binds.items():
+            if name == "ui_click":
+                continue
             binds += font.render_single_center(MAIN_FONT, f"{god.lang[name]}", (left_x, cy), LABEL_SIZE)
             
             text = "Error"
@@ -382,6 +384,8 @@ class ShopUI:
             if rect.collidepoint(camera.ui_mouse):
                 tree = TreeData.get(name)
                 can = (god.player.level >= tree.unlock_level and god.player.can_buy(tree.price)) or tree.name in god.player.inventory
+                if not god.settings.tutorial.unlocked_plant():
+                    can = False
                 if name not in self.hovered_trees:
                     if can:
                         self.hovered_trees.append(name)
@@ -398,7 +402,10 @@ class ShopUI:
                     
         for name, rect in self.buildings_rects.items():
             if rect.collidepoint(camera.ui_mouse):
-                can = god.player.can_buy(BuildingData.get(name).price) or BuildingData.get(name).name in god.player.inventory
+                building = BuildingData.get(name)
+                can = god.player.can_buy(building.price) or building.name in god.player.inventory
+                if not god.settings.tutorial.unlocked_building(building.name):
+                    can = False
                 if name not in self.hovered_buildings:
                     if can:
                         self.hovered_buildings.append(name)
@@ -425,7 +432,8 @@ class ShopUI:
         rects += font.render_single_center(MAIN_FONT, f"{god.lang["shop"]}", (0, y-CARD_S*6), TITLE_SIZE)
         
         for tree in sorted(TreeData.get_all(), key=lambda tree: tree.unlock_level):
-            unlocked = god.player.level >= tree.unlock_level
+            waited = not god.settings.tutorial.unlocked_plant()
+            unlocked = god.player.level >= tree.unlock_level and not waited
             hovered = tree.name in self.hovered_trees
             
             rects += ui.panel_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), CARD_BG)
@@ -433,7 +441,7 @@ class ShopUI:
             rects += ui.image(None, (SHOP_CARD_W/1.8, SHOP_CARD_W/1.8), tree.tex_name, WHITE if unlocked else LOCKED_IMG_COL,
                               (x+SHOP_CARD_W/2, y+SHOP_CARD_W/2))
             if not unlocked:
-                rects += font.render_single_center(MAIN_FONT, f"{god.lang["level"]} {tree.unlock_level}", (x+SHOP_CARD_W/2, y+SHOP_CARD_W/2), 1.5)
+                rects += font.render_single_center(MAIN_FONT, f"{god.lang["wait"]}" if waited else f"{god.lang["level"]} {tree.unlock_level}", (x+SHOP_CARD_W/2, y+SHOP_CARD_W/2), 1.5)
             else:
                 price = f"{tree.price}{god.lang["currency"]}" if tree.name not in god.player.inventory else f"{god.lang["free"]}"
                 rects += font.render_single_center(MAIN_FONT, price, (x+SHOP_CARD_W/2, y+SHOP_CARD_W-CARD_S*2.2), 1.5, MONEY_COL)
@@ -445,15 +453,19 @@ class ShopUI:
         total_w = SHOP_CARD_W*buildings_amount+CARD_S*buildings_amount
         x = -total_w/2
         y = CARD_S
-        for building in sorted(BuildingData.get_all(), key=lambda b: b.price):
+        for building in [BuildingData.get(name) for name in [BOT, MINER, ENERGY_DISTRIBUTOR, ENERGY_SOURCE]]:
             hovered = building.name in self.hovered_buildings
+            waited = not god.settings.tutorial.unlocked_building(building.name)
             
             rects += ui.panel_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), CARD_BG)
             rects += ui.panel_outline_rect_objs((SHOP_CARD_W, SHOP_CARD_W), SHOP_CARD_C, (x, y), UNHOVER_OUTLINE if not hovered else HOVER_OUTLINE)
-            rects += ui.image(None, (SHOP_CARD_W/1.8, SHOP_CARD_W/1.8), building.tex_name, WHITE,
+            rects += ui.image(None, (SHOP_CARD_W/1.8, SHOP_CARD_W/1.8), building.tex_name, WHITE if not waited else LOCKED_IMG_COL,
                               (x+SHOP_CARD_W/2, y+SHOP_CARD_W/2))
-            price = f"{building.price}{god.lang["currency"]}" if building.name not in god.player.inventory else f"{god.lang["free"]}"
-            rects += font.render_single_center(MAIN_FONT, price, (x+SHOP_CARD_W/2, y+SHOP_CARD_W-CARD_S*2.2), 1.5, MONEY_COL)
+            if not waited:
+                price = f"{building.price}{god.lang["currency"]}" if building.name not in god.player.inventory else f"{god.lang["free"]}"
+                rects += font.render_single_center(MAIN_FONT, price, (x+SHOP_CARD_W/2, y+SHOP_CARD_W-CARD_S*2.2), 1.5, MONEY_COL)
+            else:
+                rects += font.render_single_center(MAIN_FONT, f"{god.lang["wait"]}", (x+SHOP_CARD_W/2, y+SHOP_CARD_W/2), 1.5)
 
             self.buildings_rects[building.name] = pygame.FRect(x, y, SHOP_CARD_W, SHOP_CARD_W)
             x += SHOP_CARD_W+CARD_S

@@ -282,6 +282,7 @@ class World(Scene):
         self.uparticles_batch.render()
         self.above_batch.render()
         self.above_unlit_batch.render()
+        self.player.post_render()
 
         if god.settings.ui_high_res and god.settings.scaled_mul != 1:
             god.app.screen_buffer.post_render()
@@ -308,6 +309,7 @@ class World(Scene):
         return below, above
     
     def event(self, event: pygame.Event):
+        self.ui.event(event)
         self.ui.pause.settings.event(event)
         self.player.event(event)
         if event.type == pygame.VIDEORESIZE:
@@ -346,12 +348,24 @@ class World(Scene):
         if need_energy:
             one_found = False
             for b in self.energy_buildings:
-                if pygame.Vector2(b.rect.center).distance_to(pos) <= ENERGY_DISTANCE:
+                if b.pos.distance_to(pos) <= ENERGY_DISTANCE:
                     one_found = True
                     break
             if not one_found:
                 return False
         return True        
+    
+    def refresh_buiding_energy(self):
+        for miner in self.miner_buildings:
+            one_found = False
+            for enb in self.energy_buildings:
+                if enb.pos.distance_to(miner.pos) <= ENERGY_DISTANCE:
+                    one_found = True
+                    break
+            if one_found:
+                miner.enable_working()
+            else:
+                miner.disable_working()
         
     def get_floor_tile(self, pos):
         pos = f"{int(pos[0]) if pos[0] > 0 else int(pos[0]-1)};{int(pos[1]) if pos[1] > 0 else int(pos[1]-1)}"

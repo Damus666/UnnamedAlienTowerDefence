@@ -59,9 +59,9 @@ FONT_SCALE = (0.02/6)*(0.6/1.5)
 FPS_OPTIONS = [30, 60, 90, 120, 244, 360, 666, 0]
 
 MOUSE_CONVERSION = {
-    pygame.BUTTON_LEFT: "left_button",
-    pygame.BUTTON_RIGHT: "right_button",
-    pygame.BUTTON_MIDDLE: "middle_button"
+    pygame.BUTTON_LEFT: "left-button",
+    pygame.BUTTON_RIGHT: "right-button",
+    pygame.BUTTON_MIDDLE: "middle-button"
 }
 
 PRB_H, PRB_C = 0.8, 0.4
@@ -79,6 +79,9 @@ MBTN_SIZE = (3, 1)
 SBTN_SIZE = (1.5, 0.8)
 BTN_TEXT, LABEL_SIZE = 1.2, 1.3
 
+OVERLAYBTN_SIZE = (1, 1)
+OVERLAYINNER_SIZE = (0.74, 0.74)
+
 # colors
 DUST1_START = pygame.Color(255,150,0,255)
 DUST1_END = pygame.Color(255, 0, 255, 255)
@@ -91,6 +94,7 @@ BUILDING_OK_COL = (0, 0.9, 0.3, 0.6)
 BUILDING_BAD_COL = (1, 0, 0, 0.6)
 PREVIW_RANGE_COL = (0, 0.7, 0.8, 0.4)
 PREVIW_ENERGY_COL = (0, 1, 0.3, 0.4)
+DESTROY_COLOR = (1, 0, 0, 0.6)
 
 ENEMY_DAMAGE_COL = (1, 0, 0, 1)
 PORTAL_COL = (1.1, 1, 1, 0.6)
@@ -135,6 +139,7 @@ NEXT_LEVEL_XP_MUL = 1.5
 PLAYER_START_MONEY = 500
 
 P_BLOCK_I, P_DESTROY_I, P_PREVIEW_I, P_RANGEPREV_I = 0, 1, 3, 2
+PLAYER_INVENTORY = ["bot", "energy_distributor", "energy_source", "miner"]
 
 # noise
 PLANT_OCTAVES = 2

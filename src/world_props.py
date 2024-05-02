@@ -74,6 +74,8 @@ class EnemyWaveSpawner:
     def update(self):
         if self.map_complete:
             return
+        if not god.settings.tutorial.complete:
+            self.wave_end_time = camera.get_ticks()
         if not self.wave_active:
             if camera.get_ticks() - self.wave_end_time > WAVE_COOLDOWN*1000:
                 self.start_wave()

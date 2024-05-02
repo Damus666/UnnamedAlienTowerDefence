@@ -57,10 +57,72 @@ class Languages:
         return list(self.langs.keys())
                 
     def get(self, name) -> str:
-        return self.langs[god.settings.lang][name]
+        res = self.langs[god.settings.lang][name]
+        if god.settings.lang in ["heb", "ar"]:
+            return res[::-1]
+        return res
     
     def __getitem__(self, name):
         return self.get(name)
+    
+class Tutorial:
+    def __init__(self):
+        self.complete = False
+        self.stage = 1
+        self.stage_num = 5
+        self.unlocked = [ENERGY_SOURCE]
+        self.plants_unlock_stage = 5
+        self.complete_time = -9999
+        
+    def unlocked_building(self, name):
+        if self.complete:
+            return True
+        return name in self.unlocked
+    
+    def unlocked_plant(self):
+        if self.complete:
+            return True
+        return self.stage >= self.plants_unlock_stage
+    
+    def placed_building(self, name):
+        if self.complete:
+            return
+        if name == ENERGY_SOURCE and self.stage == 1:
+            self.unlocked.append(ENERGY_DISTRIBUTOR)
+            self.advance()
+        elif name == ENERGY_DISTRIBUTOR and self.stage == 2:
+            self.unlocked.append(MINER)
+            self.advance()
+        elif name == MINER and self.stage == 3:
+            self.unlocked.append(BOT)
+            self.advance()
+        elif name == BOT and self.stage == 4:
+            self.advance()
+            
+    def placed_plant(self):
+        self.advance()
+        
+    def skip(self):
+        if self.complete:
+            return
+        if self.stage == 1:
+            self.unlocked.append(ENERGY_DISTRIBUTOR)
+        elif self.stage == 2:
+            self.unlocked.append(MINER)
+        elif self.stage == 3:
+            self.unlocked.append(BOT)
+        self.advance()
+            
+    def advance(self):
+        if self.complete:
+            return
+        self.stage += 1
+        if self.stage > self.stage_num:
+            self.complete = True
+            self.complete_time = pygame.time.get_ticks()
+            god.sounds.play("level_up")
+            god.player.celebrate()
+        god.world.ui.build()
 
 class Settings:
     pref_path = None
@@ -85,11 +147,13 @@ class Settings:
             "pause": Keybind(KC(pygame.K_ESCAPE)),
             "tree_range": Keybind(KC(pygame.K_t)),
             "cancel_action": Keybind(KC(pygame.K_ESCAPE)),
+            "destroy_mode": Keybind(KC(pygame.K_BACKSPACE), KC(pygame.K_DELETE)),
             "place": Keybind(KC(pygame.BUTTON_LEFT, "mouse")),
-            "ui_click": Keybind(KC(pygame.BUTTON_LEFT, "mouse"))
+            "ui_click": Keybind(KC(pygame.BUTTON_LEFT, "mouse")),
         }
         self.save("default_settings")
         self.load()
+        self.tutorial = Tutorial()
 
     def load(self, filename="settings"):
         if os.path.exists(f"{Settings.user_path}{filename}.json"):

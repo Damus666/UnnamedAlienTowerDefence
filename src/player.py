@@ -20,7 +20,7 @@ class Player:
         self.level = 1
         self.next_level_xp = NEXT_LEVEL_START_XP
         self.money = PLAYER_START_MONEY
-        self.inventory = ["bot", "energy_distributor", "energy_source", "miner"]
+        self.inventory = list(PLAYER_INVENTORY)
                 
         self.status = "idle"
         self.y_status = "down"
@@ -28,6 +28,7 @@ class Player:
         self.seed_planting: TreeData = None
         self.building: BuildingData = None
         self.level_up_time = -9999
+        self.destroying = False
                 
         self.rect = pygame.FRect(0,0, OBJ_SIZE, OBJ_SIZE)
         self.hitbox = pygame.FRect(0,0,OBJ_SIZE/1.4, OBJ_SIZE/4)
@@ -54,7 +55,7 @@ class Player:
             RectObj.null(), # block
             RectObj.null(), # destroy
             RectObj.null(), # preview,
-            RectObj.null(), 
+            RectObj.null(), # rangeprev
         ]
         self.unlit_batch = FixedRectsBatch(self.unlit_rect_objs, True).create_vao(REPLACE_SHADER, *SHADER_UNIFORMS)
         
@@ -142,10 +143,7 @@ class Player:
     def build(self, pos):
         building = BUILDING_CLASSES[self.building.name](self.building, pos)
         god.world.add_building(building)
-        if building.building.name in self.inventory:
-            self.inventory.remove(building.building.name)
-        else:
-            self.buy(self.building.price)
+        god.world.refresh_buiding_energy()
         self.add_xp(self.building.place_xp)
         if not self.can_buy(self.building.price):
             self.stop_planting()
@@ -226,6 +224,27 @@ class Player:
                                                 PREVIW_ENERGY_COL, WORLD_ATLAS, god.assets.get_uvs("circle_o"))
             self.unlit_batch.update_rects(self.unlit_rect_objs)
             
+        if self.destroying:
+            center = None
+            size = 0
+            for tree in reversed(god.world.trees):
+                if tree.rect.collidepoint(camera.world_mouse):
+                    center = tree.rect.center
+                    size = tree.tree.size
+                    break
+            if center is None:
+                for building in reversed(god.world.buildings):
+                    if building.rect.collidepoint(camera.world_mouse):
+                        center = building.rect.center
+                        size = building.building.size
+                        break
+            if center is not None:
+                self.unlit_rect_objs[P_DESTROY_I] = RectObj(center, None, (size*2, size*2), DESTROY_COLOR, WORLD_ATLAS, god.assets.get_uvs("circle"))
+                self.unlit_batch.update_rects(self.unlit_rect_objs)
+            else:
+                self.unlit_rect_objs[P_DESTROY_I] = RectObj.null()
+                self.unlit_batch.update_rects(self.unlit_rect_objs)
+            
         self.dir = dir
             
     def update_buffer(self):
@@ -265,7 +284,44 @@ class Player:
                 self.hitbox.bottom = colliding_down.top
                 self.rect.bottom = self.hitbox.bottom
                 self.pos.y = self.rect.centery
-            
+                
+    def stop_destroying(self):
+        self.destroying = False
+        self.unlit_rect_objs[P_DESTROY_I] = RectObj.null()
+        self.unlit_batch.update_rects(self.unlit_rect_objs)
+    
+    def event_pause(self):
+        self.stop_planting()
+        self.stop_building()
+        if god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range()
+        god.world.ui.shop.close()
+        self.stop_destroying()
+        
+        god.world.ui.pause.toggle()
+        
+    def event_range(self):
+        god.world.ui.toggle_tree_range()
+        
+    def event_destroy(self):
+        self.stop_planting()
+        self.stop_building()
+        god.world.ui.shop.close()
+        
+        self.destroying = not self.destroying
+        if not self.destroying:
+            self.stop_destroying()
+        else:
+            if god.world.ui.tree_range_active:
+                god.world.ui.toggle_tree_range()
+        
+    def event_shop(self):
+        god.world.ui.shop.toggle()
+        self.stop_planting()
+        self.stop_building()
+        self.stop_destroying()
+        if god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range()
         
     def event(self, event: pygame.Event):
         if god.world.ui.pause.settings.listening:
@@ -275,34 +331,48 @@ class Player:
             camera.mouse_wheel(event.y, ZOOM_MUL, ZOOM_MIN, ZOOM_MAX)
             
         if god.settings.binds["cancel_action"].check_event(event):
-            done = self.seed_planting is not None or self.building is not None or god.world.ui.tree_range_active or god.world.ui.shop.is_open
+            done = self.seed_planting is not None or self.building is not None or god.world.ui.tree_range_active or god.world.ui.shop.is_open or self.destroying
             
             self.stop_planting()
             self.stop_building()
             if god.world.ui.tree_range_active:
                 god.world.ui.toggle_tree_range()
             god.world.ui.shop.close()
+            self.stop_destroying()
             
             if done:
                 return
             
         if god.settings.binds["pause"].check_event(event):
-            god.world.ui.pause.toggle()
+            self.event_pause()
             return
             
         if god.settings.binds["tree_range"].check_event(event):
-            god.world.ui.toggle_tree_range()
+            self.event_range()
+            return
+        
+        if god.settings.binds["destroy_mode"].check_event(event):
+            self.event_destroy()
             return
         
         if not god.world.ui.pause.is_open and god.settings.binds["shop"].check_event(event):
-            god.world.ui.shop.toggle()
-            self.stop_planting()
-            self.stop_building()
-            if god.world.ui.tree_range_active:
-                god.world.ui.toggle_tree_range()
+            self.event_shop()
             return
-            
+        
+        if god.world.ui.pause.is_open or god.world.ui.overlay_rect.collidepoint(camera.ui_mouse):
+            return
+        
         if god.settings.binds["place"].check_event(event):
+            if self.destroying:
+                for tree in reversed(god.world.trees):
+                    if tree.rect.collidepoint(camera.world_mouse):
+                        tree.destroy()
+                else:
+                    for building in reversed(god.world.buildings):
+                        if building.rect.collidepoint(camera.world_mouse):
+                            building.destroy()
+                return
+            
             if self.seed_planting is not None:
                 tile_center = ((camera.world_mouse[0]), (camera.world_mouse[1]))
                 tile = god.world.get_tile(tile_center)
@@ -328,5 +398,7 @@ class Player:
         tex_array.use(0)
         self.rect_batch.render()
         god.assets.use()
+        
+    def post_render(self):
         self.unlit_batch.render()
     

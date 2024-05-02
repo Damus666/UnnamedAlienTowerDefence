@@ -5,6 +5,7 @@ __pycache__/
 test.*
 temp.*
 stats.prof
+DEPRECATED/
 
 build/
 dist/

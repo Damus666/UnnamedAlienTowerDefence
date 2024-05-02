@@ -19,11 +19,32 @@ class Building:
                                 WORLD_ATLAS, god.assets.get_uvs(building.tex_name))
         self.pos = pygame.Vector2(pos)
         
+        if self.building.name in god.player.inventory:
+            god.player.inventory.remove(self.building.name)
+            god.world.ui.update_static()
+        else:
+            god.player.buy(self.building.price)
+        
+        god.settings.tutorial.placed_building(self.building.name)
+        
         if building.has_light:
             self.light = Light(self.rect.center, *self.building.light_data)
             (god.world.add_static_light if not self.building.is_bot else god.world.add_dynamic_light)(self.light)
 
         god.sounds.play_random("building_place")
+        
+    def destroy(self):
+        if self.building.name in PLAYER_INVENTORY and not self.building.name in god.player.inventory:
+            god.player.inventory.append(self.building.name)
+            god.world.ui.update_static()
+            
+        god.world.remove_building(self)
+        
+        if self.building.has_light:
+            (god.world.remove_static_light if not self.building.is_bot else god.world.remove_dynamic_light)(self.light)
+        if god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range()
+        god.world.refresh_buiding_energy()
         
     def update(self):
         ...
@@ -143,7 +164,8 @@ class MinerBuilding(Building):
         self.amount = 0
         self.mine_cooldown, self.stack_size, *_ = ORES_DATA[self.ore]
         self.last_mine = camera.get_ticks()
-        self.working = 1
+        self.working = True
+        self.can_work = True
         self.on_uvs, self.off_uvs = (god.assets.get_uvs(self.building.tex_name),
                                      god.assets.get_uvs(MINER_OFF))
         
@@ -167,12 +189,27 @@ class MinerBuilding(Building):
         self.amount_rects = font.render_single(MAIN_FONT, f"{self.amount}/{self.stack_size}", (self.rect.centerx+S, self.rect.top-S-self.sizeb/2),
                                                        1.5, "ml")
         
+    def disable_working(self):
+        self.working = False
+        self.can_work = False
+        self.rect_obj.uv = self.off_uvs
+        self.light.active = False
+        self.update_rect_obj()
+        god.world.refresh_building_like()
+        
+    def enable_working(self):
+        self.can_work = True
+        self.working = False
+        
     def update(self):
+        if not self.can_work:
+            return
         if self.amount < self.stack_size:
             if self.working != True:
                 self.working = True
                 self.rect_obj.uv = self.on_uvs
                 self.light.active = True
+                self.update_rect_obj()
                 god.world.refresh_building_like()
             if camera.get_ticks() - self.last_mine > self.mine_cooldown*1000:
                 self.last_mine = camera.get_ticks()
@@ -183,6 +220,7 @@ class MinerBuilding(Building):
                 self.working = False
                 self.rect_obj.uv = self.off_uvs
                 self.light.active = False
+                self.update_rect_obj()
                 god.world.refresh_building_like()
         
         

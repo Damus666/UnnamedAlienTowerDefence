@@ -34,8 +34,8 @@ class ProgressBar:
                                                corner, topleft, fill_col, True)+
                 panel_outline_rect_objs(size, corner, topleft, border_col, outline))
     
-def image(topleft, size, name, col=None, center=None):
-    return [RectObj(center, topleft, size, col, UI_ATLAS, god.assets.ui_atlas.get_uvs(name))]
+def image(topleft, size, name, col=None, center=None, flipx=False):
+    return [RectObj(center, topleft, size, col, UI_ATLAS, god.assets.ui_atlas.get_uvs(name, flipx))]
 
 def button(topleft, size, outline_col, text, text_size, outline="m", center=None):
     if center is not None:

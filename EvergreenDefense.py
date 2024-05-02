@@ -21,7 +21,7 @@ class App(SceneManager):
         god.assets = Assets()
         god.lang = Languages()
         god.settings = Settings()  
-        god.sounds = Sounds() 
+        god.sounds = Sounds()   
         self.screen_buffer = Screenbuffer()
         self.screen_buffer.refresh_buffer(WIDTH, HEIGHT, god.settings.scaled_mul)
         self.load_scene(World.name, MapData.get("map0"))

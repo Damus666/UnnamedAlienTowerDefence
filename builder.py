@@ -1,8 +1,13 @@
 import PyInstaller.__main__
 
 PyInstaller.__main__.run([
-    'main.py',
-    #'--onefile',
+    'EvergreenDefense.py',
+    '--onefile',
     '--windowed',
-    #'-name EvergreenDefense'
+])
+
+PyInstaller.__main__.run([
+    'EvergreenDefenseMapEditor.py',
+    '--onefile',
+    '--windowed',
 ])

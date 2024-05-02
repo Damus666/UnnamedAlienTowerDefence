@@ -65,6 +65,16 @@ def render_single(font_name: str, text: str, position, scale=1, pos_name="center
         rect_objs.append(robj)
     return rect_objs
 
+def render_single_width(font_name: str, text: str, scale=1):
+    bitmap = bitmaps[font_name]
+    x = y = 0
+    all_chars = []
+    for char in text:
+        cw = bitmap.char_w(char, scale)
+        all_chars.append([char, x, y, cw])
+        x += cw
+    return x    
+
 def render_single_center(font_name: str, text: str, center, scale=1, color=(1,1,1,1)):
     bitmap = bitmaps[font_name]
     x = y = h = 0
@@ -81,6 +91,9 @@ def render_single_center(font_name: str, text: str, center, scale=1, color=(1,1,
         rect_objs.append(robj)
     return rect_objs
 
+def render_single_height(font_name, scale=1):
+    return bitmaps[font_name].height*scale
+
 def render_full(font_name: str, text: str, position, scale, pos_name="center", max_w=-1, align="center", color=(1, 1, 1, 1)):
     bitmap = bitmaps[font_name]
     x = y = w = h = 0
@@ -89,7 +102,7 @@ def render_full(font_name: str, text: str, position, scale, pos_name="center", m
     all_chars = []
     for char in text:
         cw = bitmap.char_w(char, scale)
-        if char == "\n" or (x + cw > max_w and max_w > 0):
+        if char == "\n" or (x + cw > max_w and max_w > 0 and char == " "):
             if x > w:
                 w = x
             x = 0
@@ -143,4 +156,4 @@ def render_full(font_name: str, text: str, position, scale, pos_name="center", m
         robj = RectObj(None, (char[1], char[2]), (char[3], bitmap.height*scale), color, bitmap.tex_id,
                        bitmap.atlas.get_uvs(f"{font_name}_{char[0]}"))
         rect_objs.append(robj)
-    return rect_objs
+    return rect_objs, w, h

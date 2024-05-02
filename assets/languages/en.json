@@ -1,5 +1,4 @@
 {
-    "HEBREW/ARABIC RULE": "ONLY FLIPPED WORDS (not 'hello rob' but 'bor olleh') + ONLY LETTERS FROM THE ALPHABET YOU GAVE ME",
     "next-wave": "NEXT WAVE IN",
     "second-short": "s",
     "enemies-left": "ENEMIES LEFT",
@@ -38,17 +37,29 @@
     "pause": "Pause",
     "place": "Place",
     "cancel_action": "Cancel Action",
-    "ui_click": "UI Click",
     "main-key": "Main Key",
     "alt-key": "Alt Key",
-    "left_button": "LMB",
-    "right_button": "RMB",
-    "middle_button": "Mouse Middle",
+    "left-button": "LMB",
+    "right-button": "RMB",
+    "middle-button": "Mouse Middle",
     "button": "Mouse",
     "key": "Key",
     "unset": "Unset",
     "listening-key": "-Listening Key-",
     "reset-settings": "Reset Settings",
     "delete-settings": "Delete Settings File",
-    "free": "FREE"
+    "free": "FREE",
+
+    "destroy_mode": "Destroy Mode",
+    "tutorial": "Tutorial",
+    "wait": "WAIT",
+    "tutorial-completed": "Tutorial Completed",
+    "skip": "SKIP",
+    "finish-or-skip-tutorial": "FINISH OR SKIP TUTORIAL",
+    "tutorial_step1": "Choose a bubble-emitting plant near an ore patch and place an energy source machine on top of it\n\nIf you missplace the machines you can destroy them",
+    "tutorial_step2": "Use the energy distributor machine to allow some ore tiles to get energy",
+    "tutorial_step3": "Place a miner on top of the ores",
+    "tutorial_step4": "Place a flying bot anywhere on the map to give energy to your future plants",
+    "tutorial_step5": "Place at least one plant near the path of the enemies to kill them"
+
 }

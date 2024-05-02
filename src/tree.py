@@ -27,6 +27,14 @@ class Tree:
                                       center=(self.rect.centerx, self.rect.bottom+WORLD_BAR_H*2.5))
         god.sounds.play("tree_place")
         
+        god.settings.tutorial.placed_plant()
+                
+    def destroy(self):
+        god.world.remove_tree(self)
+        god.world.refresh_tree_lights()
+        if god.world.ui.tree_range_active:
+            god.world.ui.toggle_tree_range()
+        
     def consume_energy(self):
         self.energy -= self.tree.energy_price
         if self.energy <= 0:
