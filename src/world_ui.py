@@ -257,17 +257,19 @@ class WorldUI:
         
         # enemy health bars
         for enemy in god.world.enemies:
-            if enemy.health < enemy.enemy.health and enemy.rect.colliderect(camera.world_rect):
+            if enemy.health < enemy.enemy.health and camera.world_mouse.distance_to(enemy.rect.center) <= ENEMY_UI_DIST:
                 rects.extend(enemy.get_health_rect_objs())
                 
         # tree bars    
         for tree in god.world.trees:
-            if tree.rect.colliderect(camera.world_rect):
+            if tree.energy <= 0:
+                rects.extend(tree.warning_rect_objs)
+            if tree.pos.distance_to(camera.world_mouse) <= TREE_UI_DIST:
                 rects.extend(tree.get_bar_rect_objs())
                 
         # building ui
         for building in god.world.buildings:
-            if building.rect.colliderect(camera.world_rect):
+            if building.pos.distance_to(camera.world_mouse) <= TREE_UI_DIST:
                 rects.extend(building.get_ui_rect_objs())
                     
         self.world_batch.update_rects(rects)

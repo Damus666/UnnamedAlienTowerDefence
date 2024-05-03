@@ -252,11 +252,12 @@ class WorldBuilder:
         if tex_name in ROCKY_TILES:
             if god.world.map_loader.has_tile(up) and god.world.map_loader.tile_data(up)[-1] not in LOAD_ROCKY:
                 self.add_height(topleft, HALF_GRASS_TILE, False)
-                god.world.jump_down_rects.append(pygame.FRect(topleft, (OBJ_SIZE, HALF_COLLIDER_H)))
+                god.world.depth_rects.append(pygame.FRect(topleft, (OBJ_SIZE, OBJ_SIZE/2)))
+                #god.world.jump_down_rects.append(pygame.FRect(topleft, (OBJ_SIZE, HALF_COLLIDER_H)))
         if tex_name == GRASS_TILE:
             if not god.world.map_loader.has_tile(up) or god.world.map_loader.tile_data(up)[-1] != LOAD_GRASS:
                 self.add_colored(topleft, FLIP_GRASS_TILE, (0.6, 0.6, 0.6, 1))
-                god.world.jump_up_rects.append(pygame.FRect(topleft, (OBJ_SIZE, HALF_COLLIDER_H)))
+                #god.world.jump_up_rects.append(pygame.FRect(topleft, (OBJ_SIZE, HALF_COLLIDER_H)))
         
     def add_light_to_plants(self):
         lights_covered = {name: [] for name in CHUNK_LIGHT_DATA.keys()}

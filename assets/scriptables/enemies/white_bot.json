@@ -10,7 +10,6 @@
 		5,
 		0.5
 	],
-	"tex_name": "red_bot",
 	"speed": 7,
 	"health": 350,
 	"reward_mul": 1.5,

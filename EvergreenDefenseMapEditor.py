@@ -392,8 +392,9 @@ class EvergreenDefenseMapEditor:
         for wave in list(self.waves):
             y = wave.draw(y)
             
-        time = round(sum([sum([stage.wait+stage.cooldown*stage.amount for stage in wave.stages])+45 for wave in self.waves])/60)
-        surf = self.font1.render(f"Cumulative map time: ~{time} minutes", True, "white")
+        max_time = round(sum([sum([stage.wait+stage.cooldown*stage.amount for stage in wave.stages])+45 for wave in self.waves])/60)
+        min_time = round(sum([sum([stage.wait+stage.cooldown*stage.amount for stage in wave.stages]) for wave in self.waves])/60)
+        surf = self.font1.render(f"Map could last from ~{min_time} minutes to ~{max_time} minutes", True, "white")
         rect = surf.get_rect(topleft=(S+50, y))
         self.screen.blit(surf, rect)
             

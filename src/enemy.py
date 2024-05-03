@@ -29,6 +29,7 @@ class Enemy:
         self.effects: dict[str, AttackEffect] = {}
         self.angle = 0
         self.last_rect = self.rect.copy()
+        self.destroyed = False
         if self.enemy.has_buff:
             self.buff: EnemyBuff = ENEMY_BUFFS[self.enemy.buff](self)
         else:
@@ -116,9 +117,13 @@ class Enemy:
                                              (self.rect.centerx, self.rect.bottom+WORLD_BAR_H), HEALTH_BAR_FILL, HEALTH_BAR_BG, outline="m")        
                     
     def destroy(self):
+        if self.destroyed:
+            return
         if self.enemy.has_light:
             god.world.remove_dynamic_light(self.light)
         for effect in list(self.effects.values()):
             effect.on_destroy()
         god.world.spawner.enemy_destroyed()
         god.world.remove_enemy(self)
+        self.destroyed = True
+        

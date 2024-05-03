@@ -161,7 +161,7 @@ class BotBuilding(Building):
 class MinerBuilding(Building):
     def __init__(self, *args):
         super().__init__(*args)
-        self.ore_tile: Tile = god.world.get_floor_tile(self.rect.center)
+        self.ore_tile: Tile = god.world.get_floor_tile((self.rect.centerx, self.rect.centery+self.rect.h/4))
         self.ore = TILES_ORES[self.ore_tile.tile_name]
         self.amount = 0
         self.mine_cooldown, self.stack_size, *_ = ORES_DATA[self.ore]

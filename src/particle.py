@@ -14,6 +14,7 @@ class Particle:
         self.anim = Anim(frames, frame_speed)
         self.duration = duration
         self.born_time = camera.get_ticks()
+        self.destroyed = False
         
     def instantiate(self):
         god.world.add_uparticle(self)
@@ -33,7 +34,10 @@ class Particle:
                 self.destroy()
         
     def destroy(self):
+        if self.destroyed:
+            return
         god.world.remove_uparticle(self)
+        self.destroyed = True
         
 class MovingParticle(Particle):
     def __init__(self, pos, size, dir, dist, speed, tex_name, frames = 0, col=None, frame_speed=0):

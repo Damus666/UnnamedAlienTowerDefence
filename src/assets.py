@@ -79,7 +79,7 @@ class Assets:
         for name in names:
             for file in os.listdir(f"assets/images/{name}"):
                 surf = pygame.image.load(f"assets/images/{name}/{file}").convert_alpha()
-                if name == "icons":
+                if name == "icons" and "warning" not in file:
                     surf = pygame.transform.scale_by(surf, 0.6)
                 self.ui_atlas.add(surf, file.split('.')[0])
         

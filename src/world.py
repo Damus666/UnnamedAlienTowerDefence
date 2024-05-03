@@ -29,7 +29,7 @@ class World(Scene):
         self.plant_tiles, self.oxygen_tiles = [], []
         self.can_be_above, self.can_be_above_unlit = [], []
         
-        self.jump_up_rects, self.jump_down_rects = [], []
+        self.jump_up_rects, self.jump_down_rects, self.depth_rects = [], [], []
         self.collision_rects = self.map_loader.collisions
         self.bubble_spawners = []
         
@@ -43,9 +43,7 @@ class World(Scene):
         self.energy_buildings: list[Building] = []
         self.miner_buildings: list[MinerBuilding] = []
         self.all_building_like: list[Tree|Building] = []
-        #self.buildings_rect_objs = []
         self.tree_lights: list[Light] = []
-        #self.buildings_batch = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         self.buildings_batch_top = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         self.buildings_batch_bottom = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         
@@ -325,6 +323,9 @@ class World(Scene):
         if only_ore:
             if floor_tile.tile_name not in ROCKY_TILES:
                 return False
+            for rect in self.depth_rects:
+                if rect.collidepoint((tile_pos[0], tile_pos[1]-OBJ_SIZE/3)):
+                    return False
         if only_grassy or only_oxygen:
             if floor_tile.tile_name in ROCKY_TILES:
                 return False

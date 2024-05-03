@@ -3,7 +3,7 @@ import random
 
 from .consts import *
 from .attack import ATTACK_CLASSES, TreeAttack
-from .ui import ProgressBar
+from .ui import ProgressBar, image as ui_image
 from . import god
 
 class Tree:
@@ -25,6 +25,7 @@ class Tree:
                                         center=(self.rect.centerx, self.rect.bottom+WORLD_BAR_H))
         self.energy_bar = ProgressBar((self.rect.w*WORLD_BAR_XMUL, WORLD_BAR_H), WORLD_BAR_C, self.tree.energy, None, ENERGY_BAR_FILL, ENERGY_BAR_BG, DARK_OUTLINE, outline="m",
                                       center=(self.rect.centerx, self.rect.bottom+WORLD_BAR_H*2.5))
+        self.warning_rect_objs = ui_image(None, (1, 1), "warning", None, self.rect.center)
         god.sounds.play("tree_place")
         
         god.settings.tutorial.placed_plant()
