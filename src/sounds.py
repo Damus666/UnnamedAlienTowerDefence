@@ -45,10 +45,13 @@ class Sounds:
             self.sounds[name].stop()
         self.sounds[name].play_random()
         
-    def music_play(self, name):
+    def music_play(self, name, fade=5000):
         pygame.mixer_music.unload()
-        pygame.mixer_music.load(f"assets/sounds/{name}.wav")
-        pygame.mixer_music.play(-1, fade_ms=4000)
+        if os.path.exists(f"assets/sounds/{name}.wav"):
+            pygame.mixer_music.load(f"assets/sounds/{name}.wav")
+        else:
+            pygame.mixer_music.load(f"assets/sounds/{name}.mp3")
+        pygame.mixer_music.play(-1, fade_ms=fade)
         
     def music_pause(self):
         pygame.mixer_music.pause()
@@ -84,9 +87,9 @@ class SoundAsset:
             sound.stop()
     
 def single(name: str, volume=1):
-    try:
+    if os.path.exists(f"assets/sounds/{name}.wav"):
         return SoundAsset([pygame.mixer.Sound(f"assets/sounds/{name}.wav")], name, volume)
-    except FileNotFoundError:
+    else:
         return SoundAsset([pygame.mixer.Sound(f"assets/sounds/{name}.mp3")], name, volume)
 
 def folder(name: str, volume=1):

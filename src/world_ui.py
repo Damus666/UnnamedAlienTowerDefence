@@ -225,14 +225,17 @@ class WorldUI:
             for i, rect in enumerate(self.overlay_rects):
                 if rect.collidepoint(camera.ui_mouse):
                     getattr(god.player, f"event_{["pause", "shop", "destroy", "range", "start_wave"][i]}")()
+                    god.sounds.play("click")
                     break
             if self.tutorial_rect.collidepoint(camera.ui_mouse):
                 god.settings.tutorial.skip()
+                god.sounds.play("click")
                 
         if event.type == pygame.MOUSEMOTION:  
             if self.tutorial_rect.collidepoint(camera.ui_mouse):
                 if not self.tutorial_hovering:
                     self.tutorial_hovering = True
+                    god.sounds.play("hover", False)
                     self.update_static()
             else:
                 if self.tutorial_hovering:
@@ -269,6 +272,8 @@ class WorldUI:
                 
         # building ui
         for building in god.world.buildings:
+            if building.building.name == MINER and not building.can_work:
+                rects.extend(building.warning_rect_objs)
             if building.pos.distance_to(camera.world_mouse) <= TREE_UI_DIST:
                 rects.extend(building.get_ui_rect_objs())
                     

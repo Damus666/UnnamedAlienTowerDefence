@@ -10,14 +10,16 @@ from .tree import Tree
 from .enemy import Enemy
 from .building import Building, BotBuilding, MinerBuilding
 from .world_ui import WorldUI
-from .particle import Particle
 from . import god
 
 class World(Scene):
-    
     def init(self, map: MapData):
         god.world = self
         god.sounds.play("alien")
+        god.sounds.music_play("world_music")
+        camera.zoom = 0.5
+        camera.make_proj()
+        
         self.map = map
         self.health = self.map.health
         self.map_loader = MapLoader(self.map)
@@ -44,6 +46,7 @@ class World(Scene):
         self.miner_buildings: list[MinerBuilding] = []
         self.all_building_like: list[Tree|Building] = []
         self.tree_lights: list[Light] = []
+        self.miner_lights: list[Light] = []
         self.buildings_batch_top = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         self.buildings_batch_bottom = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         
@@ -70,7 +73,6 @@ class World(Scene):
         self.portal_angle = 0
         self.last_damage = -9999
         self.forced_refresh = camera.get_ticks()
-        god.sounds.music_play("world_music")
 
     def boss_spawned(self):
         self.random_unlit_batch.rect_objs.remove(self.builder.portal_tile.rect_obj)
@@ -154,28 +156,19 @@ class World(Scene):
         self.update_bots_batch()
         
     def add_building_like(self, building):
-        #self.can_be_above.append(building)
         self.all_building_like.append(building)
         self.refresh_building_like()
         
     def remove_building_like(self, building):
-        #self.can_be_above.remove(building)
         self.all_building_like.remove(building)
         self.refresh_building_like()
         
     def refresh_building_like(self):
         self.sort()
         self.update_split()
-        #self.buildings_rect_objs = [obj.rect_obj for obj in self.all_building_like]
-        #self.update_buildings_batch()
     
     def update_bots_batch(self):
         self.bots_batch.update_rects(self.bots_rect_objs)
-        
-    #def update_buildings_batch(self):
-    #    return
-        #self.buildings_batch.update_rects(self.buildings_rect_objs)
-        #self.buildings_batch.free_rect_objs()
         
     def sort(self):
         self.all_building_like.sort(key=lambda obj: obj.rect.centery)
@@ -202,6 +195,25 @@ class World(Scene):
         for light in self.tree_lights:
             self.static_light_batch.add_light(light)
             
+    def refresh_miner_lights(self):
+        for light in self.miner_lights:
+            self.static_light_batch.remove_light(light)
+        self.miner_lights = []
+        lights = []
+        for miner in self.miner_buildings:
+            if not miner.can_work:
+                continue
+            is_far = False
+            for light_pos in lights:
+                if miner.pos.distance_to(light_pos) < MINER_CHUNK_DIST:
+                    is_far = True
+                    break
+            if not is_far:
+                self.miner_lights.append(Light(miner.rect.center, *miner.building.light_data))
+                lights.append(miner.rect.center)
+        for light in self.miner_lights:
+            self.static_light_batch.add_light(light)
+            
     def add_static_light(self, light):
         self.static_light_batch.add_light(light)
         
@@ -215,6 +227,7 @@ class World(Scene):
         self.dynamic_light_batch.remove_light(light)
     
     def update(self):
+        god.menu = None
         if not self.spawner.wave_active:
             self.health += camera.dt*CURE_AMOUNT
         if self.health > self.map.health:
@@ -356,10 +369,21 @@ class World(Scene):
         return True        
     
     def refresh_buiding_energy(self):
+        for b in self.energy_buildings:
+            if b.building.name != ENERGY_SOURCE:
+                b.has_energy = False
+        for _ in range(len(self.energy_buildings)):
+            for enb in self.energy_buildings:
+                if enb.has_energy or enb.building.name == ENERGY_SOURCE:
+                    continue
+                for other in self.energy_buildings:
+                    if other is not enb and other.has_energy and enb.pos.distance_to(other.pos) <= ENERGY_DISTANCE:
+                        enb.has_energy = True
+                        break
         for miner in self.miner_buildings:
             one_found = False
             for enb in self.energy_buildings:
-                if enb.pos.distance_to(miner.pos) <= ENERGY_DISTANCE:
+                if enb.has_energy and enb.pos.distance_to(miner.pos) <= ENERGY_DISTANCE:
                     one_found = True
                     break
             if one_found:

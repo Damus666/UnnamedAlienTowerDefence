@@ -45,6 +45,7 @@ class SceneManager:
         sys.exit()
         
     def run(self):
+        camera.dt = 0
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

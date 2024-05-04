@@ -71,9 +71,11 @@ class RectObj:
         self.tex_id = tex_id
         self.uv = uv if uv is not None else DEFAULT_UV.copy()
         self.update_positions(center, topleft, size, angle)
+        self._ = False
     
     def update_positions(self, center=(0,0), topleft=None, size=(1,1), angle=0):
         self.pos = center if center else topleft
+        self.size = size
         self.positions = (rect_positions_center(*center, *size, angle)
                           if center is not None else 
                           rect_positions_topleft(*topleft, *size, angle))

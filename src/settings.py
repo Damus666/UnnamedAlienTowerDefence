@@ -1,9 +1,26 @@
 from .engine.prelude import *
 import os
 import json
+import random
+import noise
 
 from .consts import *
 from . import god
+
+class NoiseSettings:
+    def __init__(self, octaves, scale, activation, tile, seed=None):
+        self.seed = random.randint(0, 9999)
+        self.octaves = octaves
+        self.scale = scale
+        self.activation = activation
+        self.tile = tile
+        
+    def noise(self, xy, extra_scale=1):
+        return noise.snoise2(xy[0]*self.scale*extra_scale+self.seed, xy[1]*self.scale*extra_scale+self.seed, self.octaves)
+        
+class PlantNoiseSettings(NoiseSettings):
+    def __init__(self, activation, tile, seed=None):
+        super().__init__(PLANT_OCTAVES, PLANT_SCALE, activation, tile, seed)
 
 class KC:
     def __init__(self, code, type="key"):
@@ -132,6 +149,13 @@ class Settings:
     user_path = None
     
     def __init__(self):
+        self.grass_plant_noise = PlantNoiseSettings(-0.5, GRASS_PLANT_TILE)
+        self.spiral_noise = PlantNoiseSettings(-0.6, SPIRAL_TILE)
+        self.cactus_noise = PlantNoiseSettings(-0.67, CACTUS_TILE)
+        self.flowers_noise = PlantNoiseSettings(-0.67, FLOWERS_TILE)
+        self.spores_noise = PlantNoiseSettings(-0.65, SPORES_TILE)
+        self.rove_noise = NoiseSettings(ROVE_OCTAVES, ROVE_SCALE, -0.62, ROVE_TILE)
+        
         self.fps = FPS
         self.fps_counter = True
         self.confetti = True

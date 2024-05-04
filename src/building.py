@@ -18,6 +18,7 @@ class Building:
         self.rect_obj = RectObj(pos, None, (building.size, building.size), None, 
                                 WORLD_ATLAS, god.assets.get_uvs(building.tex_name))
         self.pos = pygame.Vector2(pos)
+        self.has_energy = True
         
         if self.building.name in god.player.inventory:
             god.player.inventory.remove(self.building.name)
@@ -106,6 +107,11 @@ class BotBuilding(Building):
             self.ore = self.target.ore
             self.target = self.next_target
             self.next_target = None
+            return
+        for miner in sorted(god.world.miner_buildings, key=lambda m: m.pos.distance_to(self.rect.center)):
+            if miner.amount > 0:
+                self.target = miner
+                break
         
     def update(self):
         self.light.active = False
@@ -177,6 +183,7 @@ class MinerBuilding(Building):
         self.sizeb = sizeb
         self.ore_img_rects = ui.image(None, (size, size), self.ore, center=(self.rect.centerx-sizeb/2, self.rect.top-S-sizeb/2))
         self.bgcircle_img_rects = ui.image((self.rect.centerx-sizeb, self.rect.top-S-sizeb), (sizeb, sizeb), "circle", (1, 1, 1, 0.3))
+        self.warning_rect_objs = ui.image(None, (1, 1), "warning", None, self.rect.center)
         self.refresh_amount()
         pygame.Vector2().as_polar()
         
@@ -195,13 +202,15 @@ class MinerBuilding(Building):
         self.working = False
         self.can_work = False
         self.rect_obj.uv = self.off_uvs
-        self.light.active = False
+        #self.light.active = False
         self.update_rect_obj()
+        god.world.refresh_miner_lights()
         god.world.refresh_building_like()
         
     def enable_working(self):
         self.can_work = True
         self.working = False
+        god.world.refresh_miner_lights()
         
     def update(self):
         if not self.can_work:
@@ -210,7 +219,8 @@ class MinerBuilding(Building):
             if self.working != True:
                 self.working = True
                 self.rect_obj.uv = self.on_uvs
-                self.light.active = True
+                #self.light.active = True
+                god.world.refresh_miner_lights()
                 self.update_rect_obj()
                 god.world.refresh_building_like()
             if camera.get_ticks() - self.last_mine > self.mine_cooldown*1000:
@@ -221,7 +231,8 @@ class MinerBuilding(Building):
             if self.working != False:
                 self.working = False
                 self.rect_obj.uv = self.off_uvs
-                self.light.active = False
+                #self.light.active = False
+                god.world.refresh_miner_lights()
                 self.update_rect_obj()
                 god.world.refresh_building_like()
         

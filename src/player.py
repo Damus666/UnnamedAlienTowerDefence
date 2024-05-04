@@ -146,7 +146,7 @@ class Player:
         god.world.refresh_buiding_energy()
         self.add_xp(self.building.place_xp)
         if not self.can_buy(self.building.price):
-            self.stop_planting()
+            self.stop_building()
         if god.world.ui.tree_range_active:
             god.world.ui.toggle_tree_range(), god.world.ui.toggle_tree_range()
     

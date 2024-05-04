@@ -1,28 +1,11 @@
 from .engine.prelude import *
 import random
-import noise
 import json
-import typing
 
 from .consts import *
 from .enemy import Enemy
 from .particle import MovingParticle
 from . import god
-
-class NoiseSettings:
-    def __init__(self, octaves, scale, activation, tile, seed=None):
-        self.seed = random.randint(0, 9999)
-        self.octaves = octaves
-        self.scale = scale
-        self.activation = activation
-        self.tile = tile
-        
-    def noise(self, xy):
-        return noise.snoise2(xy[0]*self.scale+self.seed, xy[1]*self.scale+self.seed, self.octaves)
-        
-class PlantNoiseSettings(NoiseSettings):
-    def __init__(self, activation, tile, seed=None):
-        super().__init__(PLANT_OCTAVES, PLANT_SCALE, activation, tile, seed)
         
 class Tile:
     def __init__(self, topleft, size, tile_name, is_floor=False, is_plant=False, is_ore=False, rect_obj=None):
@@ -91,14 +74,13 @@ class EnemyWaveSpawner:
                 else:
                     if camera.get_ticks() - self.stage_end_time > self.current_stage["wait"]*1000:
                         self.start_stage()
-            if self.spawned_emenies > 0 and self.killed_enemies == self.spawned_emenies:
+            if self.killed_enemies == self.wave_enemies_amount:
                 self.end_wave()
                 
     def spawn_enemy(self):
         self.last_enemy = camera.get_ticks()
         enemy = Enemy(EnemyData.get(self.current_stage["enemy"]), god.world.builder.portal_tile.rect.center)
         god.world.add_enemy(enemy)
-        self.spawned_emenies += 1
         self.stage_spanwed_enemies += 1
         
     def enemy_destroyed(self):
@@ -149,7 +131,6 @@ class EnemyWaveSpawner:
         self.stage_idx = 0
         self.stages_amount = len(self.wave_stages)
         self.stages_completed = False
-        self.spawned_emenies = 0
         self.killed_enemies = 0
         god.world.ui.update_static()
         god.sounds.play("win")
@@ -158,12 +139,7 @@ class WorldBuilder:
     def __init__(self):
         self.dust_rect_objs, self.tile_rect_objs, self.plant_rect_objs = [], [], []
         
-        self.grass_plant_noise = PlantNoiseSettings(-0.5, GRASS_PLANT_TILE)
-        self.spiral_noise = PlantNoiseSettings(-0.6, SPIRAL_TILE)
-        self.cactus_noise = PlantNoiseSettings(-0.67, CACTUS_TILE)
-        self.flowers_noise = PlantNoiseSettings(-0.67, FLOWERS_TILE)
-        self.spores_noise = PlantNoiseSettings(-0.65, SPORES_TILE)
-        self.rove_noise = NoiseSettings(ROVE_OCTAVES, ROVE_SCALE, -0.62, ROVE_TILE)
+        
         
     def build(self):
         self.build_asteroid()
@@ -237,12 +213,12 @@ class WorldBuilder:
                     self.add_depth(topleft, tex_name)
                             
                     if block_id == LOAD_GRASS and not is_height:
-                        for noise in [self.cactus_noise, self.flowers_noise, self.spiral_noise, self.grass_plant_noise]:
+                        for noise in [god.settings.cactus_noise, god.settings.flowers_noise, god.settings.spiral_noise, god.settings.grass_plant_noise]:
                             if noise.noise(topleft) < noise.activation:
                                 self.add_plant(noise.tile, topleft)
                                 break
                     if block_id == LOAD_ROCK and topleft[1] > god.world.map_loader.min_y+10:
-                        for noise in [self.rove_noise, self.spores_noise]:
+                        for noise in [god.settings.rove_noise, god.settings.spores_noise]:
                             if noise.noise(topleft) < noise.activation:
                                 self.add_plant(noise.tile, topleft)
                                 break

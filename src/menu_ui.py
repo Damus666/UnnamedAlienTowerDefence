@@ -27,8 +27,9 @@ class UIRect:
         getattr(self.settings, f"{self.name}_click")()
 
 class SettingsUI:
-    def __init__(self):
+    def __init__(self, is_world=True):
         self.is_open = False
+        self.is_world = is_world
         self.category = "general"
         
         self.main_batch = GrowingRectsBatch(UI_SHADER, *SHADER_UNIFORMS)
@@ -301,6 +302,8 @@ class SettingsUI:
     def back_click(self):
         self.is_open = False
         self.listening = False
+        if not self.is_world:
+            god.menu.close_settings()
         
     def category_click(self, category):
         self.category = category
@@ -308,7 +311,10 @@ class SettingsUI:
         
     def lang_click(self, lang):
         god.settings.lang = lang
-        god.world.ui.build()
+        if self.is_world:
+            god.world.ui.build()
+        else:
+            god.menu.build()
         
     def music_click(self, dir):
         god.settings.music_vol += 0.1*dir
@@ -570,7 +576,8 @@ class PauseUI:
         self.close()
         
     def menu_click(self):
-        ...
+        self.close()
+        god.app.load_scene("MainMenu")
         
     def settings_click(self):
         self.settings.is_open = True

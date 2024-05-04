@@ -3,6 +3,7 @@ from src.engine.prelude import *
 import glcontext
 
 from src.world import World
+from src.main_menu import MainMenu
 from src.assets import Assets
 from src.sounds import Sounds
 from src.settings import Settings, Languages
@@ -24,7 +25,8 @@ class App(SceneManager):
         god.sounds = Sounds()   
         self.screen_buffer = Screenbuffer()
         self.screen_buffer.refresh_buffer(WIDTH, HEIGHT, god.settings.scaled_mul)
-        self.load_scene(World.name, MapData.get("map0"))
+        #self.load_scene(World.name, MapData.get("map0"))
+        self.load_scene(MainMenu.name)
         #import ez_profile
 
     def pre_render(self):

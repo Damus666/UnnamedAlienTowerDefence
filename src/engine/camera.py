@@ -79,7 +79,7 @@ def update_mouse():
 def tick_window(desired_fps):
     global dt
     pygame.display.flip()
-    dt = min(clock.tick(desired_fps)/1000, 0.3)*time_scale
+    dt = min(clock.tick(desired_fps)/1000, 0.2)*time_scale
     
 def upload_uniforms(*shader_names: str):
     """shader uniforms: proj: mat4, view: mat4"""
