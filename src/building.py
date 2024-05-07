@@ -108,7 +108,7 @@ class BotBuilding(Building):
             self.target = self.next_target
             self.next_target = None
             return
-        for miner in sorted(god.world.miner_buildings, key=lambda m: m.pos.distance_to(self.rect.center)):
+        for miner in sorted(god.world.miner_buildings, key=lambda m: m.pos.distance_to(self.rect.center)/(m.amount+0.01)):
             if miner.amount > 0:
                 self.target = miner
                 break
@@ -129,7 +129,7 @@ class BotBuilding(Building):
                     break
                     
         if self.next_target is not None and self.target is None:
-            for miner in sorted(god.world.miner_buildings, key=lambda m: m.pos.distance_to(self.rect.center)):
+            for miner in sorted(god.world.miner_buildings, key=lambda m: m.pos.distance_to(self.rect.center)/(m.amount+0.01)):
                 if miner.amount > 0:
                     self.target = miner
                     break

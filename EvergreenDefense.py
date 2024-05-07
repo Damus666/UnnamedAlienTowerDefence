@@ -15,16 +15,19 @@ class App(SceneManager):
         god.app = self 
         Sounds.pre_init()
         Settings.get_user_path()
-        camera.init_window(WIDTH, HEIGHT, TITLE, PROJ_SIZE, 0)
+        camera.init_window(WIDTH, HEIGHT, TITLE, PROJ_SIZE, 0, pygame.image.load("assets/images/enemies/boss_bot.png"))
         ctx.load_shaders("assets/shaders", LIT_SHADER, UNLIT_SHADER, UI_SHADER, REPLACE_SHADER)
         scriptable.load("assets/scriptables")
         
-        god.assets = Assets()
         god.lang = Languages()
         god.settings = Settings()  
+        god.assets = Assets()
+        god.assets.finish_load()
+        
         god.sounds = Sounds()   
         self.screen_buffer = Screenbuffer()
         self.screen_buffer.refresh_buffer(WIDTH, HEIGHT, god.settings.scaled_mul)
+        
         #self.load_scene(World.name, MapData.get("map0"))
         self.load_scene(MainMenu.name)
         #import ez_profile

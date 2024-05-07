@@ -27,7 +27,7 @@ world_rect = pygame.FRect(0, 0, 0, 0)
 keys = []
 buttons = []
 
-def init_window(w: int, h: int, title: str, proj_scale: float = 1, extra_flags: int = 0):
+def init_window(w: int, h: int, title: str, proj_scale: float = 1, extra_flags: int = 0, icon=None):
     global screen_surf, win_w, win_h, clock, proj_size, win_center
     pygame.init()
     screen_surf = pygame.display.set_mode((w, h), pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF | extra_flags)
@@ -36,6 +36,7 @@ def init_window(w: int, h: int, title: str, proj_scale: float = 1, extra_flags: 
     proj_size = proj_scale
     win_center = pygame.Vector2(win_w//2, win_h//2)
     pygame.display.set_caption(title)
+    if icon: pygame.display.set_icon(icon.convert_alpha())
     
     make_proj()
     update_view()

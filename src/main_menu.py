@@ -37,6 +37,7 @@ class MenuEnemy:
 
 class MainMenu(Scene):
     def init(self):
+        god.assets.loading_screen()
         god.menu = self
         god.sounds.music_play("menu_music", 0)
         god.settings.tutorial = Tutorial()
@@ -54,6 +55,7 @@ class MainMenu(Scene):
         self.static_rects = []
         self.unlit_rects = []
         self.static_top_rects:list[RectObj] = []
+        self.static_txt_rects: list[RectObj] = []
         self.settings_static_rects = []
         self.plant_tiles: list[Tile] = []
         self.enemies: list[MenuEnemy] = []
@@ -64,12 +66,11 @@ class MainMenu(Scene):
         self.create_enemies()
         self.create_buttons()
         
+        self.loading_batch = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         self.unlit_batch = FixedRectsBatch(self.unlit_rects).create_vao(UNLIT_SHADER, *SHADER_UNIFORMS)
         self.settings_batch = FixedRectsBatch(self.settings_static_rects).create_vao(LIT_SHADER, *SHADER_UNIFORMS)
         self.bg_batch = FixedRectsBatch(self.static_rects).create_vao(LIT_SHADER, *SHADER_UNIFORMS)
-        self.static_batch = FixedRectsBatch(sorted(self.static_top_rects,
-                                                                     key=(lambda r: (r.pos[1]+r.size[1] if not r._ else r.pos[1]+r.size[1]/1.3))), False)\
-                                                                         .create_vao(LIT_SHADER, *SHADER_UNIFORMS)
+        self.static_batch = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         self.dynamic_batch = GrowingRectsBatch(LIT_SHADER, *SHADER_UNIFORMS)
         
         self.settings = SettingsUI(False)
@@ -198,24 +199,43 @@ class MainMenu(Scene):
         self.portal_light = Light(self.portal_rect.center, (1, 0, 0), 10, 1)
         self.dynamic_light_batch.add_light(self.portal_light)
         
-        self.static_top_rects += font.render_single_center(MAIN_FONT, f"{god.lang["main-menu-help"]}", (0, camera.rect.bottom-0.2), 0.8)
+        self.static_txt_rects += font.render_single_center(MAIN_FONT, f"{god.lang["main-menu-help"]}", (0, camera.rect.bottom-0.2), 0.8)
     
     def create_buttons(self):
         self.settings_rect = pygame.FRect(0, 0, 5, 5).move_to(center=(-camera.rect.w/4-1.5, camera.rect.h/4+1.2-PATH_OFFSET))
         self.settings_obj = RectObj(self.settings_rect.center, None, self.settings_rect.size, None, UI_ATLAS, god.assets.get_ui_uvs("settingsicon"))
         self.settings_light = Light(self.settings_rect.center, (1, 1, 1), 5, 0.4)
         self.dynamic_light_batch.add_light(self.settings_light)
-        self.static_top_rects += font.render_single_center(MAIN_FONT, f"{god.lang["settings"]}", (self.settings_rect.centerx, self.settings_rect.bottom+0.2), 1.8)
+        self.static_txt_rects += font.render_single_center(MAIN_FONT, f"{god.lang["settings"]}", (self.settings_rect.centerx, self.settings_rect.bottom+0.2), 1.8)
     
         self.quit_rect = pygame.FRect((0, 0), QUIT_SPACE_SIZES).move_to(center=(camera.rect.right-QUIT_SPACE_SIZES[0]/2, camera.rect.bottom-QUIT_SPACE_SIZES[1]/2+0.3))
-        self.static_top_rects += font.render_single_center(MAIN_FONT, f"{god.lang["quit"]}", self.quit_rect.center, 3)
+        self.static_txt_rects += font.render_single_center(MAIN_FONT, f"{god.lang["quit"]}", self.quit_rect.center, 3)
         self.quit_light = Light(self.quit_rect.center, (1, 1, 1), 6, 0.4)
         self.dynamic_light_batch.add_light(self.quit_light)
     
     def build(self):
         self.settings.build()
+        self.static_txt_rects = []
         
+        self.static_txt_rects += font.render_single_center(MAIN_FONT, f"{god.lang["main-menu-help"]}", (0, camera.rect.bottom-0.2), 0.8)
+        self.static_txt_rects += font.render_single_center(MAIN_FONT, f"{god.lang["settings"]}", (self.settings_rect.centerx, self.settings_rect.bottom+0.2), 1.8)
+        self.static_txt_rects += font.render_single_center(MAIN_FONT, f"{god.lang["quit"]}", self.quit_rect.center, 3)
+        
+        self.loading_batch.update_rects(font.render_single_center(MAIN_FONT, f"{god.lang["loading"]}", (0, 0), 8))
+        self.static_batch.update_rects(sorted(self.static_top_rects+self.static_txt_rects,
+                                                                     key=(lambda r: (r.pos[1]+r.size[1] if not r._ else r.pos[1]+r.size[1]/1.3))))
+    
+    def loading_screen(self):
+        ctx.clear(self.clear_color)
+        self.unlit_batch.render()
+        self.bg_batch.render()
+        self.settings_batch.render()
+        self.loading_batch.render()
+        camera.tick_window(god.settings.fps)
+     
     def start_map(self):
+        self.loading_screen()
+        
         maps = MapData.get_all()
         index = pygame.math.clamp(self.enemy_index, 0, len(maps)-1)
         god.app.load_scene("World", maps[index])
@@ -286,7 +306,7 @@ class MainMenu(Scene):
             self.quit_light.intensity = 0.4
         else:
             if self.settings_rect.collidepoint(camera.world_mouse):
-                self.settings_light.intensity = 0.8
+                self.settings_light.intensity = 1
             else:
                 self.settings_light.intensity = 0.4
             if self.quit_rect.collidepoint(camera.world_mouse):

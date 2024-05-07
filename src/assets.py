@@ -2,27 +2,40 @@ from .engine.prelude import *
 import os
 
 from .consts import *
+from . import god
 
 class Assets:
     def __init__(self):
+        self.font_atlas = SpriteAtlas(20)
+        font.add_font(MAIN_FONT, pygame.Font("assets/fonts/alienbig.ttf", 300), 
+                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE, "àù€äöüßÄÖÜőáúűóöüúéŐÚíÁ", 
+                      "אבגדהוזחטיכךלמםנןסעפףתץקרשת", pygame.Font("assets/fonts/hebrew.ttf", 300),
+                      "ج ح خ ه ع غ ف ق ث ص ض ة ك م ن ت ا ل ب ي س ش ى و ر ز د ذ ط ظ ء", pygame.Font("assets/fonts/arabic.ttf", 300))
+        self.font_atlas.build("font_atlas")
+        self.loading_screen()
+        
+    def loading_screen(self):
+        ctx.clear((0, 0, 0, 1))
+        texture.upload_samplers(MAX_SAMPLERS, TEXTURES_UNIFORM, LIT_SHADER, UNLIT_SHADER, REPLACE_SHADER, UI_SHADER)
+        camera.upload_ui_uniforms(UI_SHADER)
+        self.font_atlas.texture.use(FONT_ATLAS)
+        FixedRectsBatch(font.render_single_center(MAIN_FONT, f"{god.lang["loading"]}", (0, 0), 10)).create_vao(UI_SHADER, *SHADER_UNIFORMS).render()
+        camera.tick_window(god.settings.fps)
+    
+    def finish_load(self):
         self.player = self.load_player()
         
         self.world_atlas = SpriteAtlas()
         self.ui_atlas = SpriteAtlas(2)
-        self.font_atlas = SpriteAtlas(20)
         
         self.load_folders("tiles", "trees", "buildings", "other", "particles", "enemies", "items")
         self.load_ui_folders("items", "trees", "buildings", "icons")
         self.load_named_folders("plants", "stars")
         self.load_pg()
-        font.add_font(MAIN_FONT, pygame.Font("assets/fonts/alienbig.ttf", 300), 
-                      self.font_atlas, FONT_ATLAS, True, FONT_SCALE, "àù€äöüßÄÖÜőáúűóöüúéŐÚíÁ", 
-                      "אבגדהוזחטיכךלמםנןסעפףתץקרשת", pygame.Font("assets/fonts/hebrew.ttf", 300),
-                      "ج ح خ ه ع غ ف ق ث ص ض ة ك م ن ت ا ل ب ي س ش ى و ر ز د ذ ط ظ ء", pygame.Font("assets/fonts/arabic.ttf", 300))
         
         self.world_atlas.build("world_atlas")
         self.ui_atlas.build("ui_atlas")
-        self.font_atlas.build("font_atlas")
+        
         
     def get_uvs(self, name, folder_name=None, flipx=False):
         return self.world_atlas.get_uvs(name if folder_name is None else f"{folder_name}/{name}", flipx)
