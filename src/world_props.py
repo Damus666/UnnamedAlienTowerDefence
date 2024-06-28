@@ -139,8 +139,6 @@ class WorldBuilder:
     def __init__(self):
         self.dust_rect_objs, self.tile_rect_objs, self.plant_rect_objs = [], [], []
         
-        
-        
     def build(self):
         self.build_asteroid()
         self.add_spawner()

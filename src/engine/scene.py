@@ -34,6 +34,13 @@ scenes: dict[str, type] = {}
 
 class SceneManager:        
     def load_scene(self, name, *init_args):
+        camera.zoom = 1
+        camera.position = pygame.Vector2(0, 0)
+        camera.unpause()
+        camera.make_proj()
+        camera.update_view()
+        camera.update_mouse()
+        
         self.scene: Scene = scenes[name](self, *init_args)
         
     def on_quit(self):

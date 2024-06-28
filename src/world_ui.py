@@ -181,7 +181,6 @@ class WorldUI:
             
         # overlay
         if not self.pause.is_open:
-            y = camera.rect.bottom-S
             for i, name in enumerate(["pause", "shop", "destroy", "range", "start_wave"]):
                 rects += self.overlay_bgs[i]
                 if self.overlay_activity(name):

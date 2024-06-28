@@ -49,6 +49,9 @@
     "reset-settings": "Reset Settings",
     "delete-settings": "Delete Settings File",
     "free": "FREE",
+    "resolution": "Resolution",
+    "maximized": "Maximized",
+    "windowed": "Windowed",
 
     "main-menu-help": "DRAG AND DROP ENEMIES IN THE PORTAL TO PLAY",
     "loading": "Loading...",

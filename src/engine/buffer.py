@@ -21,12 +21,15 @@ def rect_positions_topleft(tx, ty, sx, sy, a=0):
             (tx, ty + sy),
             (tx + sx, ty + sy)
         ]
-    c = (tx+sx/2, ty+sy/2)
+    cx, cy = (tx+sx/2, ty+sy/2)
+    cos, sin = math.cos(math.radians(a)), math.sin(math.radians(a))
+    sx2, sy2 = sx/2, sy/2
+    sx2cos, sx2sin, sy2cos, sy2sin = sx2*cos, sx2*sin, sy2*cos, sy2*sin
     return [
-            pygame.Vector2(-sx/2, -sy/2).rotate(a)+c,
-            pygame.Vector2(sx/2, -sy/2).rotate(a)+c,
-            pygame.Vector2(-sx/2, sy/2).rotate(a)+c,
-            pygame.Vector2(sx/2, sy/2).rotate(a)+c
+            (-sx2cos+sy2sin+cx, -sx2sin-sy2cos+cy),
+            (sx2cos+sy2sin+cx, sx2sin-sy2cos+cy),
+            (-sx2cos-sy2sin+cx, -sx2sin+sy2cos+cy),
+            (sx2cos-sy2sin+cx, sx2sin+sy2cos+cy),
         ]
     
 def rect_positions_center(cx, cy, sx, sy, a=0):

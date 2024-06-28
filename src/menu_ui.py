@@ -81,7 +81,17 @@ class SettingsUI:
             r = UIRect(SBTN_SIZE, (langx, cy), None, f"lang_{lang}", "general", self, self.lang_click, lang)
             general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered or god.settings.lang == lang else UNHOVER_OUTLINE, f"{lang}", BTN_TEXT, center=r.rect.center)
             langx += UI_S+SBTN_SIZE[0]
-        
+
+        cy += BBTN_SIZE[1]+UI_S
+        general += font.render_single_center(MAIN_FONT, f"{god.lang["resolution"]}", (left_cx, cy), LABEL_SIZE)
+
+        resw = langsw/2-UI_S
+        resx = left+w-langsw+resw/2-SBTN_SIZE[0]/2
+        for name, func in [("maximized", self.maximized_click), ("windowed", self.windowed_click)]:
+            r = UIRect((resw, SBTN_SIZE[1]), (resx, cy), None, f"res_{name}", "general", self, func, name)
+            general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered or god.settings.resolution == name else UNHOVER_OUTLINE, god.lang[name], BTN_TEXT, center=r.rect.center)
+            resx += UI_S+resw
+
         cy += BBTN_SIZE[1]+UI_S
         general += font.render_single_center(MAIN_FONT, f"{god.lang["music"]}", (left_cx, cy), LABEL_SIZE)
         
@@ -89,9 +99,9 @@ class SettingsUI:
         text = f"{god.lang["off"]}" if vol == 0 else f"{god.lang["max"]}" if vol == 1 else vol
         general += font.render_single_center(MAIN_FONT, f"{text}", (right_cx, cy), LABEL_SIZE)
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1.2, cy), None, "music_minus", "general", self, self.music_click, -1)
-        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"-", BTN_TEXT, center=r.rect.center)
+        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, "-", BTN_TEXT, center=r.rect.center)
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1.2, cy), None, "music_plus", "general", self, self.music_click, 1)
-        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"+", BTN_TEXT, center=r.rect.center)
+        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, "+", BTN_TEXT, center=r.rect.center)
         
         cy += BBTN_SIZE[1]+UI_S
         general += font.render_single_center(MAIN_FONT, f"{god.lang["sounds"]}", (left_cx, cy), LABEL_SIZE)
@@ -100,9 +110,9 @@ class SettingsUI:
         text = f"{god.lang["off"]}" if vol == 0 else f"{god.lang["max"]}" if vol == 1 else vol
         general += font.render_single_center(MAIN_FONT, f"{text}", (right_cx, cy), LABEL_SIZE)
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1.2, cy), None, "fx_minus", "general", self, self.fx_click, -1)
-        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"-", BTN_TEXT, center=r.rect.center)
+        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, "-", BTN_TEXT, center=r.rect.center)
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1.2, cy), None, "fx_plus", "general", self, self.fx_click, 1)
-        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"+", BTN_TEXT, center=r.rect.center)
+        general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, "+", BTN_TEXT, center=r.rect.center)
         
         cy += BBTN_SIZE[1]+UI_S
         
@@ -110,7 +120,7 @@ class SettingsUI:
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx, cy), None, "manual_start_wave", "general", self)
         general += ui.checkbox(r.rect.center, r.rect.w, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, god.settings.manual_wave)
         
-        cy += BBTN_SIZE[1]*5+UI_S
+        cy = camera.rect.bottom-(camera.rect.h-h)/2-BBTN_SIZE[1]*1.5
         
         r = UIRect((BBTN_SIZE[0]*1.7, MBTN_SIZE[1]), (0, cy), None, "reset", "general", self)
         general += ui.button(r.rect.topleft, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"{god.lang["reset-settings"]}", BTN_TEXT)
@@ -123,7 +133,7 @@ class SettingsUI:
         # performance
         cy = top + UI_S*2 + BBTN_SIZE[1]/2
         
-        perf += font.render_single_center(MAIN_FONT, f"FPS", (0, cy), LABEL_SIZE)
+        perf += font.render_single_center(MAIN_FONT, "FPS", (0, cy), LABEL_SIZE)
         cy += BBTN_SIZE[1]+UI_S
         
         optw = (len(FPS_OPTIONS)-1)*SBTN_SIZE[0]+MBTN_SIZE[0]+len(FPS_OPTIONS)*UI_S
@@ -272,7 +282,7 @@ class SettingsUI:
                 self.build()
                 god.sounds.play("click")
                 return
-            if kc == None:
+            if kc is None:
                 kc = KC(0, "key")
                 if self.listen_mode ==  "main":
                     self.listen_bind.bind = kc
@@ -286,7 +296,7 @@ class SettingsUI:
             god.sounds.play("click")
             
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if kc == None:
+            if kc is None:
                 kc = KC(0, "mouse")
                 if self.listen_mode ==  "main":
                     self.listen_bind.bind = kc
@@ -298,6 +308,24 @@ class SettingsUI:
             self.listen_bind = None
             self.build()
             god.sounds.play("click")
+
+    def maximized_click(self, name):
+        god.settings.resolution = name
+        god.settings.maximize()
+        if self.is_world:
+            god.world.ui.build()
+        else:
+            god.menu.build()
+        god.app.screen_buffer.refresh_buffer(camera.win_w, camera.win_h, god.settings.scaled_mul)
+
+    def windowed_click(self, name):
+        god.settings.resolution = name
+        god.settings.windowed()
+        if self.is_world:
+            god.world.ui.build()
+        else:
+            god.menu.build()
+        god.app.screen_buffer.refresh_buffer(camera.win_w, camera.win_h, god.settings.scaled_mul)
                         
     def back_click(self):
         self.is_open = False
@@ -560,7 +588,7 @@ class PauseUI:
         
         for btn, rect in self.rects.items():
             if rect.collidepoint(camera.ui_mouse):
-                if not btn in self.hovered_btns:
+                if btn not in self.hovered_btns:
                     self.hovered_btns.append(btn)
                     god.sounds.play("hover", False)
                     self.build()

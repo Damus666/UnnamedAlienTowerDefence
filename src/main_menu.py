@@ -41,8 +41,6 @@ class MainMenu(Scene):
         god.menu = self
         god.sounds.music_play("menu_music", 0)
         god.settings.tutorial = Tutorial()
-        camera.zoom = 1
-        camera.make_proj()
         
         self.poral_angle = 0
         self.enemy_index = -1
@@ -59,7 +57,7 @@ class MainMenu(Scene):
         self.settings_static_rects = []
         self.plant_tiles: list[Tile] = []
         self.enemies: list[MenuEnemy] = []
-        
+
         self.create_bg()
         self.create_title()
         self.add_light_to_plants()
@@ -259,7 +257,7 @@ class MainMenu(Scene):
                     self.sel_enemy_light.intensity = enemy.light.intensity
                     self.sel_enemy_light.range = enemy.light.range
                     god.sounds.play("click")
-                    
+
             if self.settings_rect.collidepoint(camera.world_mouse):
                 self.settings.is_open = True
                 self.portal_light.active = False
@@ -294,7 +292,7 @@ class MainMenu(Scene):
         self.poral_angle += PORTAL_ROT_SPEED*camera.dt*0.5
         self.portal_obj.update_positions(self.portal_rect.center, None, self.portal_rect.size, self.poral_angle)
         self.settings_obj.update_positions(self.settings_rect.center, None, self.settings_rect.size, self.poral_angle)
-        
+
         if self.enemy_index != -1:
             self.sel_enemy_light.rect.center = camera.world_mouse
             self.sel_enemy_rect_obj.update_positions(camera.world_mouse, None, MENU_ENEMY_SIZE)
@@ -334,4 +332,5 @@ class MainMenu(Scene):
         else:
             self.static_batch.render()
             self.dynamic_batch.render()
+
             

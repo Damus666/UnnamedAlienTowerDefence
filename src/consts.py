@@ -1,4 +1,5 @@
 import pygame
+from .scriptables import TreeData, EnemyData, MapData, BuildingData, ENERGY_SOURCE, ENERGY_DISTRIBUTOR, MINER, BOT # noqa: F401
 pygame.init()
 
 # window
@@ -278,5 +279,3 @@ PATH_OFFSET = 1
 MENU_ENEMY_SPEED = 3
 MENU_ENEMY_SIZE = (2, 2)
 QUIT_SPACE_SIZES = (7, 4)
-
-from .scriptables import TreeData, EnemyData, MapData, BuildingData, ENERGY_SOURCE, ENERGY_DISTRIBUTOR, MINER, BOT

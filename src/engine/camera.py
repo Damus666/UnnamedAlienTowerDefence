@@ -40,6 +40,17 @@ def init_window(w: int, h: int, title: str, proj_scale: float = 1, extra_flags: 
     
     make_proj()
     update_view()
+
+def resize_window(w: int, h: int, position=None, extra_flags=0):
+    global screen_surf, win_w, win_h, win_center
+    screen_surf = pygame.display.set_mode((w, h), pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF | extra_flags)
+    if position:
+        try:
+            pygame.display.set_window_position(position)
+        except Exception:
+            print("Could not set window position :(")
+
+    window_resized(w, h)
     
 def window_resized(w: int, h: int):
     global win_w, win_h, win_center

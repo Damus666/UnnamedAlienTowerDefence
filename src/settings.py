@@ -166,6 +166,7 @@ class Settings:
         self.music_vol = 1
         self.fx_vol = 1
         self.manual_wave = False
+        self.resolution = "maximized"
         self.binds: dict[str, Keybind] = {
             "left": Keybind(KC(pygame.K_a), KC(pygame.K_LEFT)),
             "right": Keybind(KC(pygame.K_d), KC(pygame.K_RIGHT)),
@@ -188,17 +189,19 @@ class Settings:
         if os.path.exists(f"{Settings.user_path}{filename}.json"):
             with open(f"{Settings.user_path}{filename}.json", "r") as file:
                 data = json.load(file)
-                for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave"]:
+                for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave", "resolution"]:
                     if name in data:
                         setattr(self, name, data[name])
                 for name, kb_data in data["binds"].items():
                     self.binds[name] = Keybind(KC(kb_data["main"]["code"], kb_data["main"]["type"]),
                                             *[KC(alt_data["code"], alt_data["type"]) for alt_data in kb_data["alts"]])
+        if self.resolution == "windowed":
+            self.windowed()
 
     def save(self, filename="settings"):
         with open(f"{Settings.user_path}{filename}.json", "w") as file:
             data = {
-                name: getattr(self, name) for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave"]
+                name: getattr(self, name) for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave", "resolution"]
             }
             data["binds"] = {name: {
                                         "main": {"code": kb.bind.code, "type": kb.bind.type}, 
@@ -222,6 +225,14 @@ class Settings:
         os.makedirs(pref_path+"userdata/", exist_ok=True)
         Settings.pref_path = pref_path
         Settings.user_path = pref_path+"userdata\\"
+
+    def maximize(self):
+        camera.resize_window(WIDTH, HEIGHT, (0, 0))
+
+    def windowed(self):
+        hw, hh = WIDTH//1.5, HEIGHT//1.5
+        center = (WIDTH//2-hw//2, HEIGHT//2-hh//2)
+        camera.resize_window(hw, hh, center)
 
     def __getitem__(self, name):
         return getattr(self, name)
