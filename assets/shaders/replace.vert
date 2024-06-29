@@ -10,7 +10,7 @@ uniform mat4 view;
 
 out vec4 fCol;
 out vec2 fUV;
-out float fTexID;
+flat out float fTexID;
 
 void main() {
     gl_Position = proj*view*vec4(vec3(vPos, 0), 1.0);
