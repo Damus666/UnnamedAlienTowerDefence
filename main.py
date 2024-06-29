@@ -1,4 +1,5 @@
 from src.engine.prelude import *
+import asyncio
 # hidden import for PyInstaller
 import glcontext
 
@@ -50,4 +51,5 @@ class App(SceneManager):
         self.screen_buffer.free()
 
 if __name__ == "__main__":
-    App().run()
+    app = App()
+    asyncio.run(app.run())

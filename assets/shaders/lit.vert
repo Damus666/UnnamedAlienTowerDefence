@@ -1,4 +1,4 @@
-#version 450 core
+#version 300 es
 
 layout (location = 0) in vec2 vPos;
 layout (location = 1) in vec4 vCol;
@@ -8,7 +8,7 @@ layout (location = 3) in float vTexID;
 out vec2 fPos;
 out vec4 fCol;
 out vec2 fUV;
-flat out float fTexID;
+out float fTexID;
 
 uniform mat4 proj;
 uniform mat4 view;

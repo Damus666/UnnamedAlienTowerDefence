@@ -1,4 +1,4 @@
-#version 450 core
+#version 300 es
 
 in vec2 fPos;
 in vec4 fCol;

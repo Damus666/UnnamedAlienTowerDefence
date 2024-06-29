@@ -1,6 +1,6 @@
 import typing
 if typing.TYPE_CHECKING:
-    from ..EvergreenDefense import App
+    from ..main import App
     from .world import World
     from .assets import Assets
     from .settings import Settings, Languages

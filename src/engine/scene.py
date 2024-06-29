@@ -1,5 +1,6 @@
 import pygame
 import sys
+import asyncio
 
 from . import ctx, camera
 
@@ -51,7 +52,7 @@ class SceneManager:
         pygame.quit()
         sys.exit()
         
-    def run(self):
+    async def run(self):
         camera.dt = 0
         while True:
             for event in pygame.event.get():
@@ -69,6 +70,8 @@ class SceneManager:
             self.pre_render()
             self.scene.render()
             self.post_render()
+
+            await asyncio.sleep(0)
 
     def pre_render(self):
         ...
