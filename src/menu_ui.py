@@ -82,15 +82,16 @@ class SettingsUI:
             general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered or god.settings.lang == lang else UNHOVER_OUTLINE, f"{lang}", BTN_TEXT, center=r.rect.center)
             langx += UI_S+SBTN_SIZE[0]
 
-        cy += BBTN_SIZE[1]+UI_S
-        general += font.render_single_center(MAIN_FONT, f"{god.lang["resolution"]}", (left_cx, cy), LABEL_SIZE)
+        if not USE_ZEN:
+            cy += BBTN_SIZE[1]+UI_S
+            general += font.render_single_center(MAIN_FONT, f"{god.lang["resolution"]}", (left_cx, cy), LABEL_SIZE)
 
-        resw = langsw/2-UI_S
-        resx = left+w-langsw+resw/2-SBTN_SIZE[0]/2
-        for name, func in [("maximized", self.maximized_click), ("windowed", self.windowed_click)]:
-            r = UIRect((resw, SBTN_SIZE[1]), (resx, cy), None, f"res_{name}", "general", self, func, name)
-            general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered or god.settings.resolution == name else UNHOVER_OUTLINE, god.lang[name], BTN_TEXT, center=r.rect.center)
-            resx += UI_S+resw
+            resw = langsw/2-UI_S
+            resx = left+w-langsw+resw/2-SBTN_SIZE[0]/2
+            for name, func in [("maximized", self.maximized_click), ("windowed", self.windowed_click)]:
+                r = UIRect((resw, SBTN_SIZE[1]), (resx, cy), None, f"res_{name}", "general", self, func, name)
+                general += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered or god.settings.resolution == name else UNHOVER_OUTLINE, god.lang[name], BTN_TEXT, center=r.rect.center)
+                resx += UI_S+resw
 
         cy += BBTN_SIZE[1]+UI_S
         general += font.render_single_center(MAIN_FONT, f"{god.lang["music"]}", (left_cx, cy), LABEL_SIZE)
@@ -164,28 +165,13 @@ class SettingsUI:
         
         cy += BBTN_SIZE[1]+UI_S
         
-        perf += font.render_single_center(MAIN_FONT, f"{god.lang["ui-always-hd"]}", (left_cx, cy), LABEL_SIZE)
-        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx, cy), None, "ui_hd", "performance", self)
-        perf += ui.checkbox(r.rect.center, r.rect.w, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, god.settings.ui_high_res)
-        
-        cy += BBTN_SIZE[1]+UI_S
-        
         perf += font.render_single_center(MAIN_FONT, f"{god.lang["max-lights"]}", (left_cx, cy), LABEL_SIZE)
         perf += font.render_single_center(MAIN_FONT, f"{god.settings.max_lights}", (right_cx, cy), LABEL_SIZE)
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1, cy), None, "lights_minus", "performance", self, self.lights_click, -1)
         perf += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"-", BTN_TEXT, center=r.rect.center)
         r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1, cy), None, "lights_plus", "performance", self, self.lights_click, 1)
         perf += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"+", BTN_TEXT, center=r.rect.center)
-        
-        cy += BBTN_SIZE[1]+UI_S
-        
-        perf += font.render_single_center(MAIN_FONT, f"{(god.lang["resolution-multiplier"])}", (left_cx, cy), LABEL_SIZE)
-        perf += font.render_single_center(MAIN_FONT, f"{round(god.settings.scaled_mul, 2)}", (right_cx, cy), LABEL_SIZE)
-        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx-SBTN_SIZE[0]*1, cy), None, "scaled_minus", "performance", self, self.scaled_click, -1)
-        perf += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"-", BTN_TEXT, center=r.rect.center)
-        r = UIRect((SBTN_SIZE[1], SBTN_SIZE[1]), (right_cx+SBTN_SIZE[0]*1, cy), None, "scaled_plus", "performance", self, self.scaled_click, 1)
-        perf += ui.button(None, r.rect.size, HOVER_OUTLINE if r.was_hovered else UNHOVER_OUTLINE, f"+", BTN_TEXT, center=r.rect.center)
-                
+
         # binds
         cy = top + UI_S*1 + MBTN_SIZE[1]/2
         left_x, right_x = left_cx-w/10, right_cx-w/10
@@ -310,22 +296,24 @@ class SettingsUI:
             god.sounds.play("click")
 
     def maximized_click(self, name):
+        if USE_ZEN:
+            return
         god.settings.resolution = name
         god.settings.maximize()
         if self.is_world:
             god.world.ui.build()
         else:
             god.menu.build()
-        god.app.screen_buffer.refresh_buffer(camera.win_w, camera.win_h, god.settings.scaled_mul)
 
     def windowed_click(self, name):
+        if USE_ZEN:
+            return
         god.settings.resolution = name
         god.settings.windowed()
         if self.is_world:
             god.world.ui.build()
         else:
             god.menu.build()
-        god.app.screen_buffer.refresh_buffer(camera.win_w, camera.win_h, god.settings.scaled_mul)
                         
     def back_click(self):
         self.is_open = False
@@ -361,12 +349,6 @@ class SettingsUI:
         god.settings.max_lights = pygame.math.clamp(god.settings.max_lights, 5, MAX_LIGHTS)
         self.build()
         
-    def scaled_click(self, dir):
-        god.settings.scaled_mul += 0.05*dir
-        god.settings.scaled_mul = pygame.math.clamp(god.settings.scaled_mul, 0.1, 1)
-        god.app.screen_buffer.refresh_buffer(camera.win_w, camera.win_h, god.settings.scaled_mul)
-        self.build()
-        
     def fps_counter_click(self):
         god.settings.fps_counter = not god.settings.fps_counter
         self.build()
@@ -377,10 +359,6 @@ class SettingsUI:
         
     def confetti_click(self):
         god.settings.confetti = not god.settings.confetti
-        self.build()
-        
-    def ui_hd_click(self):
-        god.settings.ui_high_res = not god.settings.ui_high_res
         self.build()
         
     def fps_click(self, fps):

@@ -97,7 +97,7 @@ class MainMenu(Scene):
                         tile_type = ROCK_TILE
                         
                 self.static_rects.append(RectObj(None, (x, y), (OBJ_SIZE, OBJ_SIZE), color, WORLD_ATLAS, god.assets.get_uvs(tile_type)))
-                
+
                 if y == PATH_SIZE//2+1-PATH_OFFSET:
                     self.static_rects.append(RectObj(None, (x, y), (OBJ_SIZE, OBJ_SIZE), (0.6, 0.6, 0.6, 1), WORLD_ATLAS, god.assets.get_uvs(FLIP_GRASS_TILE)))
                 if y == -PATH_SIZE//2-PATH_OFFSET:
@@ -240,7 +240,6 @@ class MainMenu(Scene):
     
     def event(self, event):
         if event.type == pygame.VIDEORESIZE:
-            god.app.screen_buffer.refresh_buffer(event.w, event.h, god.settings.scaled_mul)
             self.build()
         if self.settings.is_open:
             self.settings.event(event)

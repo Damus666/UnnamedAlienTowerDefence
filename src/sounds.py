@@ -47,10 +47,10 @@ class Sounds:
         
     def music_play(self, name, fade=5000):
         pygame.mixer_music.unload()
-        if os.path.exists(f"assets/sounds/{name}.wav"):
-            pygame.mixer_music.load(f"assets/sounds/{name}.wav")
+        if os.path.exists(f"assets/sounds/{name}.ogg"):
+            pygame.mixer_music.load(f"assets/sounds/{name}.ogg")
         else:
-            pygame.mixer_music.load(f"assets/sounds/{name}.mp3")
+            raise RuntimeError(f"Only ogg sound files allowed! {name}.ogg missing")
         pygame.mixer_music.play(-1, fade_ms=fade)
         
     def music_pause(self):
@@ -87,11 +87,13 @@ class SoundAsset:
             sound.stop()
     
 def single(name: str, volume=1):
-    if os.path.exists(f"assets/sounds/{name}.wav"):
-        return SoundAsset([pygame.mixer.Sound(f"assets/sounds/{name}.wav")], name, volume)
+    if os.path.exists(f"assets/sounds/{name}.ogg"):
+        return SoundAsset([pygame.mixer.Sound(f"assets/sounds/{name}.ogg")], name, volume)
     else:
-        return SoundAsset([pygame.mixer.Sound(f"assets/sounds/{name}.mp3")], name, volume)
+        print(f"Only ogg sound files allowed! {name}.ogg missing")
+        return
+        raise RuntimeError(f"Only ogg sound files allowed! {name}.ogg missing")
 
 def folder(name: str, volume=1):
     return SoundAsset([pygame.mixer.Sound(f"assets/sounds/{name}/{fn}")
-                        for fn in os.listdir(f"assets/sounds/{name}")], name, volume)        
+                        for fn in os.listdir(f"assets/sounds/{name}") if "ogg"], name, volume)        

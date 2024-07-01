@@ -55,6 +55,7 @@ class SceneManager:
     async def run(self):
         camera.dt = 0
         while True:
+            ctx.new_frame()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.quit()
@@ -69,8 +70,9 @@ class SceneManager:
             self.scene.update()
             self.pre_render()
             self.scene.render()
+            ctx.end_frame()
             self.post_render()
-
+        
             await asyncio.sleep(0)
 
     def pre_render(self):

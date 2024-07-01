@@ -1,5 +1,6 @@
 import glm
 import pygame
+from .usezen import USE_ZEN
 from . import ctx
 
 proj_mat4 = None
@@ -90,6 +91,8 @@ def update_mouse():
     
 def tick_window(desired_fps):
     global dt
+    if USE_ZEN:
+        ctx.zen_image.blit()
     pygame.display.flip()
     dt = min(clock.tick(desired_fps)/1000, 0.2)*time_scale
     

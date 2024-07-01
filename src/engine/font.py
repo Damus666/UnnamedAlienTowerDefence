@@ -1,4 +1,3 @@
-import moderngl
 import pygame
 import string
 

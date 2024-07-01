@@ -1,4 +1,5 @@
 import pygame
+import sys
 from .scriptables import TreeData, EnemyData, MapData, BuildingData, ENERGY_SOURCE, ENERGY_DISTRIBUTOR, MINER, BOT # noqa: F401
 pygame.init()
 

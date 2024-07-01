@@ -15,6 +15,8 @@ class Assets:
         self.loading_screen()
         
     def loading_screen(self):
+        if USE_ZEN:
+            return
         ctx.clear((0, 0, 0, 1))
         texture.upload_samplers(MAX_SAMPLERS, TEXTURES_UNIFORM, LIT_SHADER, UNLIT_SHADER, REPLACE_SHADER, UI_SHADER)
         camera.upload_ui_uniforms(UI_SHADER)
@@ -36,6 +38,8 @@ class Assets:
         self.world_atlas.build("world_atlas")
         self.ui_atlas.build("ui_atlas")
         
+        if USE_ZEN:
+            ctx.register_resources(self.world_atlas.texture.image, self.ui_atlas.texture.image, self.font_atlas.texture.image)
         
     def get_uvs(self, name, folder_name=None, flipx=False):
         return self.world_atlas.get_uvs(name if folder_name is None else f"{folder_name}/{name}", flipx)

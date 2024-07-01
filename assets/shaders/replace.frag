@@ -3,7 +3,7 @@
 in vec4 fCol;
 in vec2 fUV;
 in float fTexID;
-out vec4 oCol;
+layout (location = 0) out vec4 oCol;
 
 uniform sampler2D textures[3];
 

@@ -1,4 +1,4 @@
-import moderngl
+from .usezen import USE_ZEN, zengl, moderngl
 import pygame
 import pathlib
 import numpy
@@ -6,28 +6,39 @@ import random
 from . import ctx, buffer
 
 def upload_samplers(size: int, uniform_name: str, *shader_names: str, ):
+    if USE_ZEN:
+        return
     data = numpy.fromiter(list(range(size)), dtype=numpy.int32)
     for shader_name in shader_names:
-        ctx.get_shader(shader_name)[uniform_name].write(data)
+        ctx.shader_write(shader_name, uniform_name, data)
 
 class Texture:
     def __init__(self, size: tuple[int, int], data: bytes, name: str = "unnamed"):
         self.size: tuple[int, int] = size
         self.data: bytes = data
         self.name: str = name
-        self.texture: moderngl.Texture = ctx.ctx.texture(size, 4, data)
-        self.ID: int = id(self.texture)
-        self.texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        if USE_ZEN:
+            self.image: "zengl.Image" = ctx.ctx.image(size, data=(data))
+            self.ID: int = id(self.image)
+        else:
+            self.texture: "moderngl.Texture" = ctx.ctx.texture(size, 4, data)
+            self.texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
+            self.ID: int = id(self.texture)
         self.is_array: bool = False
         
     def update(self, data: bytes):
-        self.texture.write(data)
+        if USE_ZEN:
+            self.image.write((data), self.size)
+        else:
+            self.texture.write(data)
         self.data = data
         
     def to_surface(self) -> pygame.Surface:
-        return pygame.image.frombuffer(self.texture.read(), self.size, "RGBA")
+        return pygame.image.frombuffer(self.image.read() if USE_ZEN else self.texture.read(), self.size, "RGBA")
     
     def use(self, location: int):
+        if USE_ZEN:
+            return
         self.texture.use(location)
     
     @staticmethod

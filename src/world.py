@@ -1,7 +1,6 @@
 from .engine.prelude import *
 import random
 import moderngl
-from OpenGL.GL import *
 
 from .consts import *
 from .player import Player
@@ -294,9 +293,6 @@ class World(Scene):
         self.above_unlit_batch.render()
         self.player.post_render()
 
-        if god.settings.ui_high_res and god.settings.scaled_mul != 1:
-            god.app.screen_buffer.post_render()
-
         self.ui.render()
         
     def get_above_player(self, list_from):
@@ -323,7 +319,6 @@ class World(Scene):
         self.ui.pause.settings.event(event)
         self.player.event(event)
         if event.type == pygame.VIDEORESIZE:
-            god.app.screen_buffer.refresh_buffer(event.w, event.h, god.settings.scaled_mul)
             self.ui.build()
     
     def can_build(self, building, pos, only_ore=False, only_grassy=False, only_oxygen=False, is_bot = False, need_energy=False):

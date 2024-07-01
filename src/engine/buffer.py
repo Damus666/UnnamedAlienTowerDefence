@@ -1,10 +1,8 @@
-import glm
-import moderngl
-import pygame
+from .usezen import USE_ZEN, zengl, moderngl
 import math
 import numpy
-from OpenGL.GL import *
 from . import ctx
+from . import camera
 
 DEFAULT_UV = [
     (0, 0),
@@ -127,11 +125,15 @@ class RectObj:
         ]
 """
 
+def zen_tex(i):
+    return {"name": f"textures[{i}]", "binding": i}
+
 class FixedRectsBatch:
     def __init__(self, rect_objs: list[RectObj], dynamic: bool = False, amount=None):
         self.rect_objs = rect_objs
         self.rects_amount = len(self.rect_objs) if not amount else amount
         self.dynamic = dynamic
+        self.pipeline = None
         self.create_buffers()
         
     def get_buffer_data(self):
@@ -142,12 +144,29 @@ class FixedRectsBatch:
         return numpy.fromiter(buffer_data, dtype=numpy.float32)
         
     def create_buffers(self):
-        self.ibo = ctx.ctx.buffer(rect_indices(self.rects_amount), dynamic=False)
-        self.vbo = ctx.ctx.buffer(self.get_buffer_data() if len(self.rect_objs) > 0 else None, dynamic=self.dynamic, reserve=(self.rects_amount*9*4*4 if len(self.rect_objs) <= 0 else 0))
+        ibo_data = rect_indices(self.rects_amount)
+        vbo_data = self.get_buffer_data() if len(self.rect_objs) > 0 else None
+        reserve = (self.rects_amount*9*4*4 if len(self.rect_objs) <= 0 else 0)
+        if USE_ZEN:
+            
+            self.ibo = ctx.ctx.buffer(ibo_data, index=True)
+            if reserve > 0:
+                self.vbo = ctx.ctx.buffer(None, size=reserve)
+            else:
+                self.vbo = ctx.ctx.buffer(vbo_data)
+        else:
+            self.ibo = ctx.ctx.buffer(ibo_data, dynamic=False)
+            self.vbo = ctx.ctx.buffer(vbo_data, dynamic=self.dynamic, reserve=reserve)
         return self
         
     def create_vao(self, shader_name, *shader_uniforms):
-        self.vao = ctx.ctx.vertex_array(ctx.get_shader(shader_name), [(self.vbo, *shader_uniforms)], index_buffer=self.ibo)
+        if USE_ZEN:
+            if self.pipeline is not None:
+                ctx.unregister_pipeline(self.pipeline)
+            self.pipeline = ctx.make_pipeline(shader_name, self.vbo, self.ibo, shader_uniforms[0], self.vbo.size // zengl.calcsize(shader_uniforms[0]), [zen_tex(i) for i in range(3)])
+            ctx.register_pipeline(self.pipeline, shader_name)
+        else:
+            self.vao = ctx.ctx.vertex_array(ctx.get_shader(shader_name), [(self.vbo, *shader_uniforms)], index_buffer=self.ibo)
         return self
         
     def update_rects(self, rect_objs: list[RectObj]=None):
@@ -160,25 +179,41 @@ class FixedRectsBatch:
         self.rect_objs = []
         
     def render(self):
-        self.vao.render()
+        if USE_ZEN:
+            self.pipeline.viewport = (0, 0, camera.win_w, camera.win_h)
+            self.pipeline.render()
+        else:
+            self.vao.render()
         
 class GrowingRectsBatch:
     def __init__(self, shader_name, *shader_uniforms):
         self.shader_name, self.shader_uniforms = shader_name, shader_uniforms
         self.rect_objs: list[RectObj] = []
         self.reserved_amount = 5
-        self.ibo = ctx.ctx.buffer(rect_indices(self.reserved_amount), dynamic=False)
-        self.vbo = ctx.ctx.buffer(reserve=self.reserved_amount*9*4*4, dynamic=False)
-        self.vao = ctx.ctx.vertex_array(ctx.get_shader(shader_name), [(self.vbo, *shader_uniforms)], index_buffer=self.ibo)
+        self.pipeline = None
+        self.create_arrays()
         self.update_rects()
+
+    def create_arrays(self):
+        ibo_data = rect_indices(self.reserved_amount)
+        reserve = self.reserved_amount*9*4*4
+        if USE_ZEN:
+            self.ibo = ctx.ctx.buffer(ibo_data, index=True)
+            self.vbo = ctx.ctx.buffer(None, size=reserve)
+            if self.pipeline is not None:
+                ctx.unregister_pipeline(self.pipeline)
+            self.pipeline = ctx.make_pipeline(self.shader_name, self.vbo, self.ibo, self.shader_uniforms[0], self.vbo.size // zengl.calcsize(self.shader_uniforms[0]), [zen_tex(i) for i in range(3)])
+            ctx.register_pipeline(self.pipeline, self.shader_name)
+        else:
+            self.ibo = ctx.ctx.buffer(ibo_data, dynamic=False)
+            self.vbo = ctx.ctx.buffer(reserve=reserve, dynamic=False)
+            self.vao = ctx.ctx.vertex_array(ctx.get_shader(self.shader_name), [(self.vbo, *self.shader_uniforms)], index_buffer=self.ibo)
         
     def update_rects(self, rect_objs: list[RectObj]=None):
         self.rect_objs = rect_objs if rect_objs else self.rect_objs
         if len(self.rect_objs) > self.reserved_amount:
-            self.reserved_amount = len(self.rect_objs)#+10
-            self.ibo = ctx.ctx.buffer(rect_indices(self.reserved_amount), dynamic=False)
-            self.vbo = ctx.ctx.buffer(reserve=self.reserved_amount*9*4*4, dynamic=False)
-            self.vao = ctx.ctx.vertex_array(ctx.get_shader(self.shader_name), [(self.vbo, *self.shader_uniforms)], index_buffer=self.ibo)
+            self.reserved_amount = len(self.rect_objs)
+            self.create_arrays()
         buffer_data = []
         for rect in self.rect_objs:
             buffer_data.extend(rect.buffer_data)
@@ -186,45 +221,11 @@ class GrowingRectsBatch:
         self.vbo.write(numpy.fromiter(buffer_data, dtype=numpy.float32))
         
     def render(self):
-        self.vao.render()
+        if USE_ZEN:
+            self.pipeline.viewport = (0, 0, camera.win_w, camera.win_h)
+            self.pipeline.render()
+        else:
+            self.vao.render()
         
     def free_rect_objs(self):
         self.rect_objs = []
-
-class Screenbuffer:
-    def __init__(self):
-        self.fbo_id = None
-        self.tbo_id = None
-
-    def refresh_buffer(self, width, height, mul):
-        self.free()
-
-        self.mul = mul
-        self.screenw, self.screenh = width, height
-        self.width, self.height = int(width*mul), int(height*mul)
-
-        self.fbo_id = glGenFramebuffers(1)
-        glBindFramebuffer(GL_FRAMEBUFFER, self.fbo_id)
-        self.tbo_id = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, self.tbo_id)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.tbo_id, 0)
-
-    def pre_render(self):
-        glViewport(0, 0, self.width, self.height)
-        glBindFramebuffer(GL_FRAMEBUFFER, self.fbo_id)
-        glClearColor(0.0, 0.0, 0.0, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    def post_render(self):
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
-        glBlitFramebuffer(0, 0, self.width, self.height, 0, 0, self.screenw, self.screenh, GL_COLOR_BUFFER_BIT, GL_NEAREST)
-        glViewport(0, 0, self.screenw, self.screenh)
-
-    def free(self):
-        if self.fbo_id is not None:
-            glDeleteFramebuffers(1, [self.fbo_id])
-        if self.tbo_id is not None:
-            glDeleteTextures(1, [self.tbo_id])

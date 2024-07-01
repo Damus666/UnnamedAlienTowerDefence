@@ -1,8 +1,9 @@
 from src.engine.prelude import *
 import asyncio
-# hidden import for PyInstaller
-import glcontext
-
+if not USE_ZEN:
+    # hidden import for PyInstaller
+    import glcontext
+print("PORCODIO")
 from src.world import World
 from src.main_menu import MainMenu
 from src.assets import Assets
@@ -26,8 +27,6 @@ class App(SceneManager):
         god.assets.finish_load()
         
         god.sounds = Sounds()   
-        self.screen_buffer = Screenbuffer()
-        self.screen_buffer.refresh_buffer(WIDTH, HEIGHT, god.settings.scaled_mul)
         
         #self.load_scene(World.name, MapData.get("map0"))
         self.load_scene(MainMenu.name)
@@ -38,17 +37,12 @@ class App(SceneManager):
         camera.upload_ui_uniforms(UI_SHADER)
         texture.upload_samplers(MAX_SAMPLERS, TEXTURES_UNIFORM, LIT_SHADER, UNLIT_SHADER, REPLACE_SHADER, UI_SHADER)
         god.assets.use()
-        if god.settings.scaled_mul != 1:
-            self.screen_buffer.pre_render()
 
     def post_render(self):
-        if not god.settings.ui_high_res and god.settings.scaled_mul != 1:
-            god.app.screen_buffer.post_render()
         camera.tick_window(god.settings.fps)
         
     def on_quit(self):
         god.settings.save()
-        self.screen_buffer.free()
 
 if __name__ == "__main__":
     app = App()

@@ -1,6 +1,7 @@
 import numpy
 import pygame
 from . import ctx
+from .usezen import USE_ZEN
 
 class Light:
     def __init__(self, pos, color, range, intensity):
@@ -45,5 +46,12 @@ class LightBatch:
         
     @staticmethod
     def upload_uniform(static_batch, dynamic_batch, shader_name, max_lights):
-        ctx.get_shader(shader_name)["numLights"] = min(len(static_batch.filtered)+len(dynamic_batch.filtered), max_lights)
-        ctx.get_shader(shader_name)["lightData"] = numpy.fromiter(static_batch.buffer+dynamic_batch.buffer, dtype=numpy.float32)
+        numlights_data = float(min(len(static_batch.filtered)+len(dynamic_batch.filtered), max_lights))
+        data = static_batch.buffer+dynamic_batch.buffer
+        lightdata_data = numpy.fromiter(data + [0 for _ in range(max(0, max_lights*7-len(data)))], dtype=numpy.float32)
+        if USE_ZEN:
+            ctx.shader_set(shader_name, "numLights", numlights_data)
+            ctx.shader_set(shader_name, "lightData", lightdata_data)
+        else:
+            ctx.get_shader(shader_name)["numLights"] = numlights_data
+            ctx.get_shader(shader_name)["lightData"] = lightdata_data

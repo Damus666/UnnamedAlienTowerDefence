@@ -189,19 +189,19 @@ class Settings:
         if os.path.exists(f"{Settings.user_path}{filename}.json"):
             with open(f"{Settings.user_path}{filename}.json", "r") as file:
                 data = json.load(file)
-                for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave", "resolution"]:
+                for name in ["fps", "fps_counter", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave", "resolution"]:
                     if name in data:
                         setattr(self, name, data[name])
                 for name, kb_data in data["binds"].items():
                     self.binds[name] = Keybind(KC(kb_data["main"]["code"], kb_data["main"]["type"]),
                                             *[KC(alt_data["code"], alt_data["type"]) for alt_data in kb_data["alts"]])
-        if self.resolution == "windowed":
+        if self.resolution == "windowed" and not USE_ZEN:
             self.windowed()
 
     def save(self, filename="settings"):
         with open(f"{Settings.user_path}{filename}.json", "w") as file:
             data = {
-                name: getattr(self, name) for name in ["fps", "fps_counter", "scaled_mul", "ui_high_res", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave", "resolution"]
+                name: getattr(self, name) for name in ["fps", "fps_counter", "max_lights", "lang", "music_vol", "fx_vol", "confetti", "manual_wave", "resolution"]
             }
             data["binds"] = {name: {
                                         "main": {"code": kb.bind.code, "type": kb.bind.type}, 
