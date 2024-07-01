@@ -3,7 +3,7 @@ import asyncio
 if not USE_ZEN:
     # hidden import for PyInstaller
     import glcontext
-print("PORCODIO")
+
 from src.world import World
 from src.main_menu import MainMenu
 from src.assets import Assets
