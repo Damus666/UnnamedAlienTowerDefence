@@ -1,6 +1,4 @@
 from .engine.prelude import *
-import random
-import moderngl
 
 from .consts import *
 from .player import Player

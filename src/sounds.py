@@ -46,21 +46,21 @@ class Sounds:
         self.sounds[name].play_random()
         
     def music_play(self, name, fade=5000):
-        pygame.mixer_music.unload()
+        pygame.mixer.music.unload()
         if os.path.exists(f"assets/sounds/{name}.ogg"):
-            pygame.mixer_music.load(f"assets/sounds/{name}.ogg")
+            pygame.mixer.music.load(f"assets/sounds/{name}.ogg")
         else:
             raise RuntimeError(f"Only ogg sound files allowed! {name}.ogg missing")
-        pygame.mixer_music.play(-1, fade_ms=fade)
+        pygame.mixer.music.play(-1, fade_ms=fade)
         
     def music_pause(self):
-        pygame.mixer_music.pause()
+        pygame.mixer.music.pause()
         
     def music_resume(self):
-        pygame.mixer_music.unpause()
+        pygame.mixer.music.unpause()
         
     def update_volumes(self):
-        pygame.mixer_music.set_volume(god.settings.music_vol)
+        pygame.mixer.music.set_volume(god.settings.music_vol)
         for sound in self.sounds.values():
             sound.update_volume(god.settings.fx_vol)
         

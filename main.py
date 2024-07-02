@@ -1,3 +1,14 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#   "pygame-ce",
+#   "zengl",
+#   "glm",
+#   "noise",
+#   "numpy",
+# ]
+# ///
+# pygbag --template noctx.tmpl .
 from src.engine.prelude import *
 import asyncio
 if not USE_ZEN:

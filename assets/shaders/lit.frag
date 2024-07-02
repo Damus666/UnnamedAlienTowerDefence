@@ -1,4 +1,5 @@
 #version 300 es
+precision highp float;
 
 in vec2 fPos;
 in vec4 fCol;
@@ -14,7 +15,19 @@ uniform float lightData[100*7];
 const vec4 BASE_LIGHT = vec4(0.15, 0.15, 0.15, 1);
 
 void main() {
-    vec4 originalCol = texture(textures[int(fTexID)], fUV) * fCol;
+    vec4 originalCol = vec4(1.0, 1.0, 1.0, 1.0);
+    switch (int(fTexID)) {
+        case 0:
+            originalCol = texture(textures[0], fUV) *fCol;
+            break;
+        case 1:
+            originalCol = texture(textures[1], fUV) *fCol;
+            break;
+        case 2:
+            originalCol = texture(textures[2], fUV) *fCol;
+            break;
+    }
+    // vec4 originalCol = texture(textures[int(fTexID)], fUV) * fCol;
     if (originalCol.a <= 0.01) {
         discard;
     }

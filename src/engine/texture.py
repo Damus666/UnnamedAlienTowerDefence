@@ -18,7 +18,7 @@ class Texture:
         self.data: bytes = data
         self.name: str = name
         if USE_ZEN:
-            self.image: "zengl.Image" = ctx.ctx.image(size, data=(data))
+            self.image: "zengl.Image" = ctx.ctx.image(size, "rgba8unorm", data=(data))
             self.ID: int = id(self.image)
         else:
             self.texture: "moderngl.Texture" = ctx.ctx.texture(size, 4, data)

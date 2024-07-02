@@ -1,6 +1,6 @@
 import sys
 
-FORCE_USE = False
+FORCE_USE = True
 
 USE_ZEN = False
 zengl = NotImplemented

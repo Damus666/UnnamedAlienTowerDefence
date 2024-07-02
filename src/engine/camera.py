@@ -77,7 +77,10 @@ def make_proj():
         
 def update_view():
     global view_mat4, rect, world_rect
-    view_mat4 = glm.translate(glm.vec3(-position.x, -position.y, 0))
+    if USE_ZEN and False:
+        view_mat4 = glm.translate(glm.identity(glm.mat4), glm.vec3(-position.x, -position.y, 0))
+    else:
+        view_mat4 = glm.translate(glm.vec3(-position.x, -position.y, 0))
     rect = pygame.FRect(-win_w/unit, -win_h/unit, (win_w/unit)*2, (win_h/unit)*2)
     world_rect = pygame.FRect(screen_to_world(pygame.Vector2(0, 0)), (rect.w/zoom, rect.h/zoom))
     
